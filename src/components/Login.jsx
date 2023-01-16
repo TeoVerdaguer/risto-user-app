@@ -92,7 +92,7 @@ const Login = ({navigation}) => {
                 familyName: userInfo.familyName,
                 name: userInfo.name,
                 email: userInfo.email,
-                client_id: userInfo.id, // TODO: client_id debe aceptar mas de 20 caracteres
+                client_id: userInfo.id,
                 photo: userInfo.photo,
                 })
             });
@@ -105,8 +105,8 @@ const Login = ({navigation}) => {
     }
 
     return (
-        <View>
-        <Text>Login</Text>
+        <View style={Styles.mainContainer}>
+        <Text style={Styles.title}>Risto</Text>
         {!user.idToken ? (
           <GoogleSigninButton
             style={{width: 192, height: 48}}
@@ -132,6 +132,15 @@ const Styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         margin: 20
+    },
+    title: {
+        fontSize: 32,
+        textAlign: 'center',
+        fontWeight: '700',
+        margin: 50
+    },
+    mainContainer: {
+        padding: 100
     }
 })
 

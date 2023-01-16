@@ -16,7 +16,7 @@ const Main = ({ navigation }) => {
         </View>
         <View style={Styles.btnContainer}>
             <Button
-                color={'#22C676'}
+                color='#22C676'
                 title='Go to Login'
                 onPress={() => 
                     navigation.navigate('Login')
@@ -25,7 +25,7 @@ const Main = ({ navigation }) => {
         </View>
         <View style={Styles.btnContainer}>
             <Button
-                color={'#22C676'}
+                color='#22C676'
                 title='Go to Restaurants List'
                 onPress={() => 
                     navigation.navigate('RestaurantsList')
