@@ -2,6 +2,8 @@
   package="com.ristouserapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAzY54AncCOU3RNS4l7gSCKVHaaQKKBrwo"/>
 
     <application
       android:name=".MainApplication"

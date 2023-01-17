@@ -1,10 +1,35 @@
 import React, { Component } from 'react'
 import { View, Button } from 'react-native'
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
-import { StyleSheet } from 'react-native'
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps'
+import Geolocation from '@react-native-community/geolocation';
+import { StyleSheet } from 'react-native';
+import { useState, useEffect } from 'react';
+
+const IOS = Platform.OS === 'ios';
+const ANDROID = Platform.OS === 'android';
 
 const Map = ({ navigation }) => {
 
+    const [position, setPosition] = useState({
+        latitude: 10,
+        longitude: 10,
+        latitudeDelta: 0.001,
+        longitudeDelta: 0.001,
+    });
+
+
+      useEffect(() => {
+        Geolocation.getCurrentPosition((pos) => {
+          const crd = pos.coords;
+          setPosition({
+            latitude: crd.latitude,
+            longitude: crd.longitude,
+            latitudeDelta: 0.0421,
+            longitudeDelta: 0.0421,
+          });
+        });
+      }, []);
+    
     // const LATITUDE_DELTA = 0.009;
     // const LONGITUDE_DELTA = 0.009;
     // const LATITUDE = 18.7934829;
@@ -23,7 +48,6 @@ const Map = ({ navigation }) => {
     //     longitudeDelta: LONGITUDE_DELTA
     // });
 
-
     // if (navigator.geolocation) {
     //     navigator.geolocation.getCurrentPosition(
     //         position => {
@@ -40,12 +64,28 @@ const Map = ({ navigation }) => {
     // } else {
     //     console.log('no navigator-------')
     // }
-    
-    
+
   return (
     <View>
         <View style={Styles.container}>
-            <MapView
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          style={Styles.map}
+          initialRegion={position}
+          showsUserLocation={true}
+          showsMyLocationButton={true}
+          followsUserLocation={true}
+          showsCompass={true}
+          scrollEnabled={true}
+          zoomEnabled={true}
+          pitchEnabled={true}
+          rotateEnabled={true}>
+           <Marker
+           title='Yor are here'
+           description='This is your current location'
+           coordinate={position}/>
+           </MapView>
+            {/* <MapView
                 style={Styles.map}
                 provider={PROVIDER_GOOGLE}
                 initialRegion={{
@@ -55,7 +95,7 @@ const Map = ({ navigation }) => {
                     longitudeDelta: 0.0421,
                   }}
                 // region={this.getMapRegion()}
-            />
+            /> */}
             <View style={Styles.btnContainer}>
                 <Button
                     title={'Ver Restaurantes'}
