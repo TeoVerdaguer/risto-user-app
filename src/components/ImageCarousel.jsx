@@ -1,12 +1,12 @@
 import React from "react";
 import { View, Text } from "react-native";
 
-function User() {
+const ImageCarousel = () => {
     return (
         <View>
-            <Text>User</Text>
+            <Text>Image Carousel</Text>
         </View>
     );
-}
+};
 
-export default User;
+export default ImageCarousel;
