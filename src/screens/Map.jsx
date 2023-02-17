@@ -56,14 +56,15 @@ const Map = ({ navigation }) => {
                     name: responseJson.data[i].business_name,
                     id: responseJson.data[i].business_id,
                     position: {
-                        latitude: parseFloat(responseJson.data[i].map_position_y),
-                        longitude: parseFloat(responseJson.data[i].map_position_x),
+                        latitude: parseFloat(responseJson.data[i].map_position_x),
+                        longitude: parseFloat(responseJson.data[i].map_position_y),
                     },
-                    // positionX: responseJson.data[i].map_position_x,
-                    // positionY: responseJson.data[i].map_position_y
                 });
             }
             setRestaurants(restaurantsList);
+            restaurants.map((res) => {
+                console.log(res.position);
+            })
         } catch (error) {
             console.log(error);
         }

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useEffect, useState } from "react";
 import { Card } from "react-native-paper";
 import { StyleSheet } from "react-native";
@@ -54,7 +54,9 @@ const BusinessCard = ({ navigation, province }) => {
     };
 
     return (
-        <View style={Styles.cardsContainer}>
+        <ScrollView horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    style={Styles.cardsContainer}>
             {restaurants.map((restaurant) => (
                 <Card
                     key={restaurant.id}
@@ -67,7 +69,7 @@ const BusinessCard = ({ navigation, province }) => {
                     <Card.Title title={restaurant.name} subtitle="21:00" />
                 </Card>
             ))}
-        </View>
+        </ScrollView>
 
         // <Card
         //     key={1}

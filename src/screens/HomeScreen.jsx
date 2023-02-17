@@ -133,7 +133,7 @@ const HomeScreen = ({ navigation }) => {
                 <ScrollView
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
-                    style={{ margin: 10, flex: 1 }}
+                    style={{ margin: 10, flex: 1, marginEnd: 0 }}
                 >
                     {categories.map((category) => (
                         <Chip

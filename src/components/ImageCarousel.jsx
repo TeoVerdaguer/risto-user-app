@@ -1,10 +1,31 @@
-import React from "react";
-import { View, Text } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, Image } from "react-native";
+import { ActivityIndicator } from "react-native-paper";
+import Carousel from "react-native-snap-carousel";
 
-const ImageCarousel = () => {
+const ImageCarousel = ({ images, height, width }) => {
+    console.log(images);
+    const renderItem = ({ item }) => {
+        return (
+            <Image
+                style={{ width, height }}
+                PlaceHolderContent={<ActivityIndicator color="#fff" />}
+                source={{ uri: item }}
+            />
+        );
+    };
+
     return (
         <View>
-            <Text>Image Carousel</Text>
+            <Text>HOla</Text>
+            {/* <Carousel
+                layout="default"
+                data={images}
+                sliderWidth={width}
+                itemWidth={width}
+                itemHeight={height}
+                renderItem={renderItem}
+            /> */}
         </View>
     );
 };

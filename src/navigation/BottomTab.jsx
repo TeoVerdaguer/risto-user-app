@@ -17,12 +17,13 @@ const Stack = createNativeStackNavigator();
 
 const HomeStack = ({ route: {params} }) => {
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Navigator>
+            <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}/>
             <Stack.Screen
                 name="RestaurantDetail"
                 component={RestaurantDetail}
                 initialParams={params}
+                options={{ headerShown: false }}
             />
         </Stack.Navigator>
     );
@@ -53,7 +54,7 @@ const BottomTab = ({  }) => {
                             alignItems: "center",
                         }}
                     >
-                        <Ionicons name="location" size={20} color="grey" />
+                        <Ionicons name="location-sharp" size={20} color="grey" />
                         <Text style={Styles.headerTitle} onPress={ () => {navigation.navigate('Mapa')} }>Ubicacion actual</Text>
                     </View>
                 </View>
