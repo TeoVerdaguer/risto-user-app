@@ -44,27 +44,22 @@ const Map = ({ navigation }) => {
                     "Content-Type": "application/json",
                 },
             });
-            const responseJson = await response.json();
-            let restaurantsList = [];
-            for (let i = 0; i < responseJson.data.length; i++) {
-                restaurantsList.push({
-                    name: responseJson.data[i].business_name,
-                    id: responseJson.data[i].business_id,
-                    position: {
-                        latitude: parseFloat(
-                            responseJson.data[i].map_position_x
-                        ),
-                        longitude: parseFloat(
-                            responseJson.data[i].map_position_y
-                        ),
-                    },
-                });
-            }
+            const {data} = await response.json();;
+
+            const restaurantsList = data.map((item) => ({
+                name: item.business_name,
+                id: item.business_id,
+                position: {
+                    latitude: parseFloat(
+                        item.map_position_x
+                    ),
+                    longitude: parseFloat(
+                        item.map_position_y
+                    ),
+                }
+            }));
+
             setRestaurants(restaurantsList);
-            restaurants.map((res) => {
-                console.log(res.name);
-                console.log(res.position);
-            });
         } catch (error) {
             console.log(error);
         }
