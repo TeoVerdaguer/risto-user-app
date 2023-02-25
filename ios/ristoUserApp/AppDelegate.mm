@@ -27,10 +27,14 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 @end
 #endif
 
+#import <GoogleMaps/GoogleMaps.h>
+
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  [GMSServices provideAPIKey:@"AIzaSyBmlp3E1YeWJFbSsXTz6GzTXRj6TJYS-do"]; // Maps config
+
   RCTAppSetupPrepareApp(application);
 
   RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
