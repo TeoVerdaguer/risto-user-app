@@ -29,10 +29,7 @@ const RestaurantsList = ({ navigation }) => {
 
     const getRestaurant = async (provinceId, userId) => {
         const URL =
-            "https://api-ibook-dev.herokuapp.com/business/get-business-list/?province=" +
-            provinceId +
-            "&user_id=" +
-            userId;
+            `https://api-ibook-dev.herokuapp.com/business/get-business-list/?province=${provinceId}&user_id=${userId}`;
 
         try {
             const response = await fetch(URL, {

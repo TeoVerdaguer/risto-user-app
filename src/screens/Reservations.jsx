@@ -22,9 +22,12 @@ function Reservations() {
     );
 }
 
+const IOS = Platform.OS === "ios";
+
 const Styles = StyleSheet.create({
     mainContainer: {
         padding: 20,
+        paddingTop: IOS ? 50 : 20,
         height: "100%",
         width: "100%",
         flex: 1,
