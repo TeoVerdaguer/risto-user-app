@@ -6,7 +6,7 @@ import CreateReservation from "../components/CreateReservation";
 import Reservations from "../screens/Reservations";
 import Login from "../screens/Login";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { Text, View, TouchableOpacity } from "react-native";
+import { Text, View } from "react-native";
 import { StyleSheet } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import RestaurantDetail from "../screens/RestaurantDetail";
@@ -20,9 +20,7 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const getTabBarVisibility = (route) => {
-    // console.log(route);
     const routeName = getFocusedRouteNameFromRoute(route) ?? "Feed";
-    // console.log(routeName);
 
     if (routeName == "RestaurantDetail") {
         return "none";
@@ -34,8 +32,12 @@ const getTabBarVisibility = (route) => {
 const getHeaderVisibility = (route) => {
     const routeName = getFocusedRouteNameFromRoute(route) ?? "Feed";
 
-    if (routeName == "RestaurantDetail" || routeName == "Favorites" ||
-        routeName == "Reviews" || routeName == "RateRestaurant") {
+    if (
+        routeName == "RestaurantDetail" ||
+        routeName == "Favorites" ||
+        routeName == "Reviews" ||
+        routeName == "RateRestaurant"
+    ) {
         return false;
     }
     return true;
@@ -161,9 +163,6 @@ const BottomTab = ({}) => {
             <Tab.Screen
                 name="Explorar"
                 component={HomeStack}
-                // options={{
-                //     headerTitle: (props) => <HomeScreenHeader {...props} />,
-                // }}
                 options={({ route }) => ({
                     tabBarStyle: {
                         display: getTabBarVisibility(route),

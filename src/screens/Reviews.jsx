@@ -7,10 +7,6 @@ import { StyleSheet } from "react-native";
 const Reviews = ({ navigation, business }) => {
     const widthScreen = Dimensions.get("window").width;
     const heightScreen = Dimensions.get("window").height;
-    const IOS = Platform.OS === "ios";
-    const ANDROID = Platform.OS === "android";
-
-    console.log(business);
 
     const business1 = {
         id: 1,
@@ -152,7 +148,9 @@ const Reviews = ({ navigation, business }) => {
                 </ScrollView>
                 <TouchableOpacity
                     style={Styles.reserveBtn}
-                    onPress={() => navigation.navigate("RateRestaurant", { business })}
+                    onPress={() =>
+                        navigation.navigate("RateRestaurant", { business })
+                    }
                 >
                     <Text style={Styles.btnText}>Calificar</Text>
                 </TouchableOpacity>

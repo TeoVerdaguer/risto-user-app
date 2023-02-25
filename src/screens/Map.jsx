@@ -1,12 +1,9 @@
 import React from "react";
-import { View, Button, TouchableOpacity, Text } from "react-native";
+import { View, TouchableOpacity, Text } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import Geolocation from "@react-native-community/geolocation";
 import { StyleSheet } from "react-native";
 import { useState, useEffect } from "react";
-
-const IOS = Platform.OS === "ios";
-const ANDROID = Platform.OS === "android";
 
 const Map = ({ navigation }) => {
     const [restaurants, setRestaurants] = useState([]);
@@ -20,26 +17,25 @@ const Map = ({ navigation }) => {
     useEffect(() => {
         Geolocation.getCurrentPosition((pos) => {
             const crd = pos.coords;
-
+            console.log(pos);
             setPosition({
                 latitude: crd.latitude,
                 longitude: crd.longitude,
                 latitudeDelta: 0.0421,
                 longitudeDelta: 0.0421,
             });
-            // console.log(position);
         });
 
-        // GET listado de restaurantes
-        getRestaurants();
+        getRestaurants(6); //TODO: Get province number
     }, []);
 
-    // GET restaurants list
-    const getRestaurants = async () => {
-        const province = 6; //TODO: Get province number
-        const URL =
-            "https://risto-api-dev.dexterdevelopment.io/business/get-business-list/?province=" +
-            province;
+    /**
+     * @desc Gets the list of restaurants in the province
+     * @param {number} province
+     * @returns void
+     */
+    const getRestaurants = async (province) => {
+        const URL = `https://risto-api-dev.dexterdevelopment.io/business/get-business-list/?province=${province}`;
         try {
             const response = await fetch(URL, {
                 method: "GET",
@@ -55,8 +51,12 @@ const Map = ({ navigation }) => {
                     name: responseJson.data[i].business_name,
                     id: responseJson.data[i].business_id,
                     position: {
-                        latitude: parseFloat(responseJson.data[i].map_position_x),
-                        longitude: parseFloat(responseJson.data[i].map_position_y),
+                        latitude: parseFloat(
+                            responseJson.data[i].map_position_x
+                        ),
+                        longitude: parseFloat(
+                            responseJson.data[i].map_position_y
+                        ),
                     },
                 });
             }
@@ -64,46 +64,11 @@ const Map = ({ navigation }) => {
             restaurants.map((res) => {
                 console.log(res.name);
                 console.log(res.position);
-            })
+            });
         } catch (error) {
             console.log(error);
         }
     };
-
-    // const LATITUDE_DELTA = 0.009;
-    // const LONGITUDE_DELTA = 0.009;
-    // const LATITUDE = 18.7934829;
-    // const LONGITUDE = 98.9867401;
-
-    // state = {
-    //     latitude: LATITUDE,
-    //     longitude: LONGITUDE,
-    //     error: null
-    // }
-
-    // getMapRegion = () => ({
-    //     latitude: this.state.latitude,
-    //     longitude: this.state.longitude,
-    //     latitudeDelta: LATITUDE_DELTA,
-    //     longitudeDelta: LONGITUDE_DELTA
-    // });
-
-    // if (navigator.geolocation) {
-    //     navigator.geolocation.getCurrentPosition(
-    //         position => {
-    //         console.log(position);
-    //         this.setState({
-    //         latitude: position.coords.latitude,
-    //         longitude: position.coords.longitude,
-    //         error: null
-    //         });
-    //     },
-    //     error => this.setState({ error: error.message }),
-    //         { enableHighAccuracy: true, timeout: 200000, maximumAge: 1000 }
-    //     );
-    // } else {
-    //     console.log('no navigator-------')
-    // }
 
     return (
         <View>
@@ -121,7 +86,6 @@ const Map = ({ navigation }) => {
                     pitchEnabled={true}
                     rotateEnabled={true}
                 >
-
                     {restaurants.map((restaurant) => (
                         <Marker
                             key={restaurant.id}
@@ -129,50 +93,8 @@ const Map = ({ navigation }) => {
                             title={restaurant.name}
                         />
                     ))}
-{/* 
-                        <Marker
-                            key={1}
-                            coordinate={{longitude:-64.19128761039116, latitude: -31.42326399709404}}
-                            title='Gloton'
-                        />
-                        <Marker
-                            key={2}
-                            coordinate={{longitude:-64.19249936652803, latitude: -31.42456402081326}}
-                            title='Patagonia'
-                        />
-                        <Marker
-                            key={3}
-                            coordinate={{longitude:-64.19267567600468, latitude: -31.42508439390338}}
-                            title='Krake'
-                        />
-                        <Marker
-                            key={4}
-                            coordinate={{longitude:-64.16888845736764, latitude: -31.477719375243016}}
-                            title='Cuatro catorce'
-                        />
-                        <Marker
-                            key={5}
-                            coordinate={{longitude:-64.19167119127195, latitude: -31.424377157497258}}
-                            title='Homies'
-                        />
-                        <Marker
-                            key={6}
-                            coordinate={{longitude:-64.19166670294464, latitude: -31.423218764195727}}
-                            title='The Journey'
-                        /> */}
-
                 </MapView>
-                {/* <MapView
-                style={Styles.map}
-                provider={PROVIDER_GOOGLE}
-                initialRegion={{
-                    latitude: 37.78825,
-                    longitude: -122.4324,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
-                  }}
-                // region={this.getMapRegion()}
-            /> */}
+
                 <View style={Styles.btnContainer}>
                     <TouchableOpacity
                         style={Styles.mainBtn}

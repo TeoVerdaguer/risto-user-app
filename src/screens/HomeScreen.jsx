@@ -10,7 +10,7 @@ const HomeScreen = ({ navigation }) => {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [categories, setCategories] = useState([]);
     const [restaurants, setRestaurants] = useState([]);
-    const [filteredRestaurants, setFilteredRestaurants] = useState([]);
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
 
     useEffect(() => {
         console.log("////// reloaded ////////");
@@ -20,29 +20,26 @@ const HomeScreen = ({ navigation }) => {
         getCategories();
 
         // GET listado de restaurantes
-        getRestaurants();
+        getRestaurants(province);
     }, []);
 
     useEffect(() => {
-        console.log('hola');
-        console.log(filteredRestaurants);
-    }, [filteredRestaurants]);
+        filterByCategory(selectedCategory);
+    }, [selectedCategory]);
 
-    // filtrar restaurantes por text input
-    // useEffect(() => {
-    //     if (restaurants && restaurants[0]) {
-    //         const filteredRestaurants = restaurants.filter((restaurant) =>
-    //             restaurant.tags.includes(searchText)
-    //         );
-    //         console.log(filteredRestaurants);
-    //     }
-    // }, [searchText]);
-
+    /**
+     * @desc Gets the current province
+     * @returns void
+     */
     const getProvince = async () => {
         // TODO: obtener provincia en base a la ubicacion del usuario
         setProvince(6);
     };
 
+    /**
+     * @desc Gets the list of all used categories
+     * @returns void
+     */
     const getCategories = async () => {
         const URL =
             "https://risto-api-dev.dexterdevelopment.io/business/get-categories/";
@@ -69,53 +66,14 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
-    const getRestaurants = async () => {
-        const URL =
-            "https://risto-api-dev.dexterdevelopment.io/business/get-business-list/?province=" +
-            province;
-        try {
-            const response = await fetch(URL, {
-                method: "GET",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                },
-            });
-            const responseJson = await response.json();
-            let restaurantsList = [];
-            let image = "";
-
-            for (let i = 0; i < responseJson.data.length; i++) {
-                if (
-                    responseJson.data[i] &&
-                    responseJson.data[i].resource_list.resource_image
-                ) {
-                    image = responseJson.data[i].resource_list.resource_image;
-                } else {
-                    image = "https://picsum.photos/200";
-                }
-
-                restaurantsList.push({
-                    name: responseJson.data[i].business_name,
-                    id: responseJson.data[i].business_id,
-                    img: image,
-                    tags: responseJson.data[i].business_tags,
-                });
-            }
-            setFilteredRestaurants(restaurantsList);
-        } catch (error) {
-            console.log(error);
-        }
-    };
-
     /**
-    * @desc Returns restaurants which have the searched tags
-    * @param {string} text
-    * @returns void
-    */
-    const getSearchBusiness = async (text) => {
-        const URL = `https://risto-api-dev.dexterdevelopment.io/business/get-search-business/?tag_search=${text}&province=6`;
-
+     * @desc Gets the list of restaurants in the province
+     * @param {number} province
+     * @returns void
+     */
+    const getRestaurants = async (province) => {
+        const URL =
+            `https://risto-api-dev.dexterdevelopment.io/business/get-business-list/?province=${province}`;
         try {
             const response = await fetch(URL, {
                 method: "GET",
@@ -125,7 +83,6 @@ const HomeScreen = ({ navigation }) => {
                 },
             });
             const responseJson = await response.json();
-            
             let restaurantsList = [];
             let image = "";
 
@@ -147,9 +104,101 @@ const HomeScreen = ({ navigation }) => {
                 });
             }
             setRestaurants(restaurantsList);
-
         } catch (error) {
             console.log(error);
+        }
+    };
+
+    /**
+     * @desc Returns restaurants which have the searched tags
+     * @param {string} text
+     * @returns void
+     */
+    const getSearchBusiness = async (text) => {
+        const URL = `https://risto-api-dev.dexterdevelopment.io/business/get-search-business/?tag_search=${text.toLowerCase()}&province=6`;
+
+        try {
+            const response = await fetch(URL, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            });
+            const responseJson = await response.json();
+
+            let restaurantsList = [];
+            let image = "";
+
+            for (let i = 0; i < responseJson.data.length; i++) {
+                if (
+                    responseJson.data[i] &&
+                    responseJson.data[i].resource_list.resource_image
+                ) {
+                    image = responseJson.data[i].resource_list.resource_image;
+                } else {
+                    image = "https://picsum.photos/200";
+                }
+
+                restaurantsList.push({
+                    name: responseJson.data[i].business_name,
+                    id: responseJson.data[i].business_id,
+                    img: image,
+                    tags: responseJson.data[i].business_tags,
+                });
+            }
+            setRestaurants(restaurantsList);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    /**
+     * @desc Returns restaurants which have the category received
+     * @param {number} categ
+     * @returns Array
+     */
+    const filterByCategory = async (categ) => {
+        setSearchText("");
+        if (categ) {
+            const URL = `https://risto-api-dev.dexterdevelopment.io/business/get-search-business/?category_id=${categ}&province=6`;
+
+            try {
+                const response = await fetch(URL, {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                });
+                const responseJson = await response.json();
+                let restaurantsList = [];
+                let image = "";
+
+                for (let i = 0; i < responseJson.data.length; i++) {
+                    if (
+                        responseJson.data[i] &&
+                        responseJson.data[i].resource_list.resource_image
+                    ) {
+                        image =
+                            responseJson.data[i].resource_list.resource_image;
+                    } else {
+                        image = "https://picsum.photos/200";
+                    }
+
+                    restaurantsList.push({
+                        name: responseJson.data[i].business_name,
+                        id: responseJson.data[i].business_id,
+                        img: image,
+                        tags: responseJson.data[i].business_tags,
+                    });
+                }
+                setRestaurants(restaurantsList);
+            } catch (error) {
+                console.log(error);
+            }
+        } else {
+            getRestaurants(province);
         }
     };
 
@@ -159,15 +208,10 @@ const HomeScreen = ({ navigation }) => {
     // );
 
     return (
-        <View style={{ flex: 1, height: "100%", width: "100%" }}>
+        <View style={Styles.mainContainer}>
             {/* Search TextInput */}
             <TextInput
-                style={{
-                    height: 40,
-                    margin: 16,
-                    backgroundColor: "#e1e1e1",
-                    padding: 10,
-                }}
+                style={Styles.textInput}
                 placeholder="Buscar restaurantes"
                 placeholderTextColor="#000"
                 onChangeText={(text) => setSearchText(text)}
@@ -176,22 +220,22 @@ const HomeScreen = ({ navigation }) => {
             />
 
             {/* Categories Filters */}
-            <View style={{ height: 70 }}>
+            <View style={Styles.categFilterContainer}>
                 <ScrollView
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
-                    style={{ margin: 10, flex: 1, marginEnd: 0 }}
+                    style={Styles.restaurantsContainer}
                 >
                     {categories.map((category) => (
                         <Chip
-                            style={{
-                                margin: 3,
-                                backgroundColor: "#e1e1e1",
-                                height: 40,
-                            }}
+                            style={Styles.restaurantCard}
                             key={category.id}
                             selected={category.id === selectedCategory}
-                            onPress={() => setSelectedCategory(category.id)}
+                            onPress={() =>
+                                selectedCategory === category.id
+                                    ? setSelectedCategory(null)
+                                    : setSelectedCategory(category.id)
+                            }
                         >
                             {category.name}
                         </Chip>
@@ -200,19 +244,16 @@ const HomeScreen = ({ navigation }) => {
             </View>
 
             {/* Reservas Dispoibles */}
-            <Text
-                style={{
-                    fontSize: 20,
-                    margin: 10,
-                    fontWeight: "700",
-                    color: "#202025",
-                }}
-            >
-                Reservas disponibles
-            </Text>
+            <Text style={Styles.reservasText}>Reservas disponibles</Text>
 
-            <BusinessCard navigation={navigation} province={province} />
-
+            {restaurants && restaurants.length > 0 ? (
+                <BusinessCard
+                    navigation={navigation}
+                    province={province}
+                    restaurants={restaurants}
+                    isLoggedIn={isLoggedIn}
+                />
+            ) : null}
             {/* Reservas anteriores */}
             {/* <Text
                 style={{
@@ -233,41 +274,35 @@ const HomeScreen = ({ navigation }) => {
 };
 
 const Styles = StyleSheet.create({
-    btnContainer: {
-        margin: 10,
-    },
-    headerBar: {
+    mainContainer: {
         flex: 1,
-        flexDirection: "column",
-        alignItems: "center",
+        height: "100%",
+        width: "100%",
     },
-    headerTitle: {
-        textDecorationLine: "underline",
-        fontWeight: "600",
-    },
-    headerSubtitle: {
-        fontSize: 15,
-    },
-    cardsContainer: {
-        flexDirection: "row",
-    },
-    card: {
-        height: 270,
-        width: 150,
-        margin: 10,
-    },
-    bottom: {
+    textInput: {
+        height: 40,
+        margin: 16,
         backgroundColor: "#e1e1e1",
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: "space-around",
-        alignItems: "center",
+        padding: 10,
     },
-    fab: {
-        backgroundColor: "#999999",
-        borderRadius: 40,
+    categFilterContainer: {
+        height: 70,
+    },
+    restaurantsContainer: {
+        margin: 10,
+        flex: 1,
+        marginEnd: 0,
+    },
+    restaurantCard: {
+        margin: 3,
+        backgroundColor: "#e1e1e1",
+        height: 40,
+    },
+    reservasText: {
+        fontSize: 20,
+        margin: 10,
+        fontWeight: "700",
+        color: "#202025",
     },
 });
 

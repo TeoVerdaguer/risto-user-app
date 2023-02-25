@@ -114,7 +114,7 @@ const UserLogin = ({ navigation }) => {
             <Text style={Styles.title}>Ingresa a tu cuenta</Text>
             {!user.idToken ? (
                 <GoogleSigninButton
-                    style={{ width: 192, height: 48 }}
+                    style={Styles.googleSignInBtn}
                     size={GoogleSigninButton.Size.Wide}
                     color={GoogleSigninButton.Color.Dark}
                     onPress={signIn}
@@ -140,7 +140,7 @@ const Styles = StyleSheet.create({
         fontSize: 22,
         fontWeight: "700",
         marginBottom: 60,
-        color: Colors.black
+        color: Colors.black,
     },
     signOutBtn: {
         backgroundColor: "#22C676",
@@ -150,6 +150,10 @@ const Styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         margin: 20,
+    },
+    googleSignInBtn: {
+        width: 192,
+        height: 48,
     },
 });
 
