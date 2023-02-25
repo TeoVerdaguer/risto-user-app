@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-    Text,
-    View,
-    ScrollView,
-    TextInput,
-    StyleSheet,
-} from "react-native";
+import { Text, View, ScrollView, TextInput, StyleSheet } from "react-native";
 import { Chip } from "react-native-paper";
 import BusinessCard from "../components/BusinessCard";
 import Api from "../helper/Api";
@@ -16,6 +10,7 @@ const HomeScreen = ({ navigation }) => {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [categories, setCategories] = useState([]);
     const [restaurants, setRestaurants] = useState([]);
+    const [filteredRestaurants, setFilteredRestaurants] = useState([]);
 
     useEffect(() => {
         console.log("////// reloaded ////////");
@@ -28,17 +23,20 @@ const HomeScreen = ({ navigation }) => {
         getRestaurants();
     }, []);
 
-    // filtrar restaurantes por text input
     useEffect(() => {
-        if (restaurants && restaurants[0]) {
+        console.log('hola');
+        console.log(filteredRestaurants);
+    }, [filteredRestaurants]);
 
-            const filteredRestaurants = restaurants.filter(
-                (restaurant) =>
-                    restaurant.tags.includes(searchText)
-            );
-            console.log(filteredRestaurants);
-        }
-    }, [searchText])
+    // filtrar restaurantes por text input
+    // useEffect(() => {
+    //     if (restaurants && restaurants[0]) {
+    //         const filteredRestaurants = restaurants.filter((restaurant) =>
+    //             restaurant.tags.includes(searchText)
+    //         );
+    //         console.log(filteredRestaurants);
+    //     }
+    // }, [searchText]);
 
     const getProvince = async () => {
         // TODO: obtener provincia en base a la ubicacion del usuario
@@ -85,33 +83,80 @@ const HomeScreen = ({ navigation }) => {
             });
             const responseJson = await response.json();
             let restaurantsList = [];
-            let image = '';
-            
-            for (let i = 0; i < responseJson.data.length; i++) {
+            let image = "";
 
-                if (responseJson.data[i] && responseJson.data[i].resource_list.resource_image) {
+            for (let i = 0; i < responseJson.data.length; i++) {
+                if (
+                    responseJson.data[i] &&
+                    responseJson.data[i].resource_list.resource_image
+                ) {
                     image = responseJson.data[i].resource_list.resource_image;
                 } else {
-                    image = 'https://picsum.photos/200';
+                    image = "https://picsum.photos/200";
                 }
 
                 restaurantsList.push({
                     name: responseJson.data[i].business_name,
                     id: responseJson.data[i].business_id,
                     img: image,
-                    tags: responseJson.data[i].business_tags
+                    tags: responseJson.data[i].business_tags,
                 });
             }
-            setRestaurants(restaurantsList);
+            setFilteredRestaurants(restaurantsList);
         } catch (error) {
             console.log(error);
         }
     };
 
-    const filteredRestaurants = restaurants.filter(
-        (restaurant) =>
-            !selectedCategory || restaurant.category === selectedCategory
-    );
+    /**
+    * @desc Returns restaurants which have the searched tags
+    * @param {string} text
+    * @returns void
+    */
+    const getSearchBusiness = async (text) => {
+        const URL = `https://risto-api-dev.dexterdevelopment.io/business/get-search-business/?tag_search=${text}&province=6`;
+
+        try {
+            const response = await fetch(URL, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            });
+            const responseJson = await response.json();
+            
+            let restaurantsList = [];
+            let image = "";
+
+            for (let i = 0; i < responseJson.data.length; i++) {
+                if (
+                    responseJson.data[i] &&
+                    responseJson.data[i].resource_list.resource_image
+                ) {
+                    image = responseJson.data[i].resource_list.resource_image;
+                } else {
+                    image = "https://picsum.photos/200";
+                }
+
+                restaurantsList.push({
+                    name: responseJson.data[i].business_name,
+                    id: responseJson.data[i].business_id,
+                    img: image,
+                    tags: responseJson.data[i].business_tags,
+                });
+            }
+            setRestaurants(restaurantsList);
+
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    // const filteredRestaurants = restaurants.filter(
+    //     (restaurant) =>
+    //         !selectedCategory || restaurant.category === selectedCategory
+    // );
 
     return (
         <View style={{ flex: 1, height: "100%", width: "100%" }}>
@@ -124,7 +169,9 @@ const HomeScreen = ({ navigation }) => {
                     padding: 10,
                 }}
                 placeholder="Buscar restaurantes"
+                placeholderTextColor="#000"
                 onChangeText={(text) => setSearchText(text)}
+                onSubmitEditing={() => getSearchBusiness(searchText)}
                 value={searchText}
             />
 
@@ -164,22 +211,23 @@ const HomeScreen = ({ navigation }) => {
                 Reservas disponibles
             </Text>
 
+            <BusinessCard navigation={navigation} province={province} />
+
+            {/* Reservas anteriores */}
+            {/* <Text
+                style={{
+                    fontSize: 20,
+                    margin: 10,
+                    fontWeight: "700",
+                    color: "#202025",
+                }}
+            >
+                Reservas anteriores
+            </Text>
             <BusinessCard
                 navigation={navigation}
                 province={province}
-            ></BusinessCard>
-            {/* Cards Restaurantes Disponibles */}
-            {/* <View style={Styles.cardsContainer}>
-        {restaurants.map(restaurant => (
-          <Card
-            key={restaurant.id}
-            style={Styles.card}
-            onPress={() => {navigation.navigate('RestaurantDetail')}}>
-            <Card.Cover source={{uri: 'https://picsum.photos/200'}} />
-            <Card.Title title={restaurant.name} subtitle="21:00" />
-          </Card>
-        ))}
-      </View> */}
+            /> */}
         </View>
     );
 };

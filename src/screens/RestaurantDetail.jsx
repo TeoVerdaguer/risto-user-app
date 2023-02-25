@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import {
     Image,
     View,
@@ -6,8 +6,10 @@ import {
     ScrollView,
     ActivityIndicator,
     TouchableOpacity,
+    Platform,
+    Alert
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ImageCarousel from "../components/ImageCarousel";
 import { Dimensions } from "react-native";
 import NumericInput from "react-native-numeric-input";
@@ -15,19 +17,41 @@ import DatePicker from "react-native-date-picker";
 import { StyleSheet } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-function RestaurantDetail({ route }) {
+const RestaurantDetail = ({ route, navigation }) => {
+    const widthScreen = Dimensions.get("window").width;
+    const heightScreen = Dimensions.get("window").height;
+    const IOS = Platform.OS === "ios";
+    const ANDROID = Platform.OS === "android";
     const businessId = route.params.id;
     const [business, setBusiness] = useState([]);
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [date, setDate] = useState(new Date());
-    const widthScreen = Dimensions.get("window").width;
-    const heightScreen = Dimensions.get("window").height;
+    const today = new Date();
+    const [date, setDate] = useState(today);
+    const [time, setTime] = useState(today);
+    const [personsValue, setPersonsValue] = useState(1);
+    const [openDate, setOpenDate] = useState(false);
+    const [openTime, setOpenTime] = useState(false);
+    const [isFavorite, setIsFavorite] = useState(false);
+    let msg = '';
+
+    const firstRender = useRef(true);
 
     useEffect(() => {
         getBusinessDetail();
     }, []);
 
+    useEffect(() => {
+        if (!firstRender.current) {
+            isFavorite ? msg = business.name + ' agreagado a favoritos' : msg = business.name + ' eliminado de favoritos';
+            Alert.alert(msg);
+        }
+        firstRender.current = false;
+    }, [isFavorite]);
+
+    // TODO: GET favorites y POST favorite
+
+    // GET business details
     const getBusinessDetail = async () => {
         const URL =
             "https://risto-api-dev.dexterdevelopment.io/business/get-business-detail/?business=" +
@@ -73,31 +97,36 @@ function RestaurantDetail({ route }) {
         }
     };
 
+    // TODO: GET avail de mesas - 
+    // reservation/get-reservation-availability/?reservation_date=2023-01-17&business=1&reservation_size=4
+
     return (
         <View
             style={{
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "flex-start",
                 height: heightScreen,
                 width: widthScreen,
             }}
         >
-            {/* <ImageCarousel
-                images={images}
-                height={250}
-                width={widthScreen}
-            /> */}
+            {/* Images container */}
+            <View style={{ height: IOS ? "60%" : '55%' }}>
+                {/* Loading spinner */}
+                {loading && (
+                    <View
+                        // style={{ flexDirection: "row", justifyContent: 'center', height: '100%', alignItems:'center' }}
+                        style={{ height: heightScreen / 1.66, width: widthScreen, position: 'absolute', zIndex: 8, top: 150, left: 0, marginHorizontal: 'auto', marginTop: 'auto' }}
+                    >
+                        <ActivityIndicator size="large" color="#424242" />
+                    </View>
+                )}
 
-            {loading && (
-                <View
-                    style={{ flexDirection: "row", padding: 10, height: 300 }}
-                >
-                    <ActivityIndicator size="large" color="#0000ff" />
-                </View>
-            )}
-            <View style={{ height: "50%" }}>
-                <ScrollView horizontal={true}>
+                {/* Images carousel */}
+                <ImageCarousel
+                    images={images}
+                    height={ IOS ? heightScreen / 1.66 : heightScreen / 1.81 }
+                    width={widthScreen}
+                    dotColor='red'
+                />
+                {/* <ScrollView horizontal={true}>
                     {images.map((img) => (
                         <Image
                             // key={Math.floor(Math.random() * 100) + 1}
@@ -105,12 +134,23 @@ function RestaurantDetail({ route }) {
                             source={{ uri: img }}
                         />
                     ))}
-                </ScrollView>
+                </ScrollView> */}
             </View>
 
+            {/* Header icons */}
+            <View style={{ position: 'absolute',  top: IOS ? 45 : 20, left: 20, width: '90%', flexDirection: 'row', justifyContent: 'space-between' }}>
+                <TouchableOpacity onPress={() => { navigation.goBack() }}>
+                    <Ionicons style={[Styles.icon, Styles.backBtn]} name="chevron-back" size={30} color="#ffffff" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => { setIsFavorite(!isFavorite) }}>
+                    <Ionicons style={Styles.icon} name="heart" size={30} color={isFavorite ? '#bf3737' : '#ffffff'} />
+                </TouchableOpacity>
+            </View>
+
+            {/* Restaurant info */}
             <View
-                style={{
-                    height: "50%",
+                style={{ 
+                    height: '40%',
                     width: widthScreen,
                     backgroundColor: "#f0f0f0",
                     padding: 20,
@@ -122,33 +162,63 @@ function RestaurantDetail({ route }) {
                 <View style={Styles.subtitleContainer}>
                     <Ionicons style={Styles.icon} name="location-sharp" size={20} color="#010103" />
                     <Text style={Styles.mainText}>{business.address}</Text>
-                    <View style={Styles.ratingContainer}>
+                    <TouchableOpacity style={Styles.ratingContainer} onPress={() => navigation.navigate('Reviews', { business })}>
                         <Ionicons style={Styles.icon} name="star" size={16} color="#e8c33d" />
                         <Text style={Styles.black}>4.4</Text>
-                    </View>
+                    </TouchableOpacity>
                 </View>
                 <View style={Styles.line} />
+
+                {/* Reservation modal */}
                 <View style={Styles.personsContainer}>
                     <Text style={[Styles.mainText, Styles.boldText]}>
                         Cuantos somos
                     </Text>
                     <NumericInput
-                        value={1}
-                        onChange={(value) => console.log(value)}
+                        value={personsValue}
+                        onChange={(value) => setPersonsValue(value)}
                         minValue={1}
                         totalHeight={45}
                         totalWidth={110}
                     />
                 </View>
+                {/* Date picker */}
                 <View style={Styles.dateContainer}>
-                    <TouchableOpacity style={Styles.datePicker}>
-                        <Text style={Styles.mainText}>Reservar hoy</Text>
+                    <TouchableOpacity style={Styles.datePicker} onPress={() => setOpenDate(true)}>
+                        <Text style={Styles.mainText}>{date.toISOString().slice(0,10)}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={Styles.timePicker}>
-                        <Text style={Styles.mainText}>21:00</Text>
+                    <TouchableOpacity style={Styles.timePicker} onPress={() => setOpenTime(true)}>
+                        <Text style={Styles.mainText}>{date.toTimeString().slice(0,5)}</Text>
                     </TouchableOpacity>
-                    {/* <DatePicker date={date} mode='date' />
-                    <DatePicker date={date} mode='time' /> */}
+
+                    <DatePicker
+                        modal
+                        open={openDate}
+                        date={date}
+                        mode='date'
+                        minimumDate={today}
+                        onConfirm={(date) => {
+                        setOpenDate(false)
+                        setDate(date)
+                        }}
+                        onCancel={() => {
+                        setOpenDate(false)
+                        }}
+                    />
+                    <DatePicker
+                        modal
+                        open={openTime}
+                        date={date}
+                        mode='time'
+                        minuteInterval={15}
+                        onConfirm={(date) => {
+                        setOpenTime(false)
+                        setTime(date)
+                        }}
+                        onCancel={() => {
+                        setOpenTime(false)
+                        }}
+                    />
                 </View>
                 <TouchableOpacity style={Styles.reserveBtn}>
                     <Text style={Styles.btnText}>Reservar</Text>
@@ -186,6 +256,9 @@ const Styles = StyleSheet.create({
     },
     icon: {
         marginRight: 8
+    },
+    backBtn:{
+        
     },
     personsContainer: {
         flexDirection: "row",

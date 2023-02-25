@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { View, Button, TouchableOpacity, Text } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import Geolocation from "@react-native-community/geolocation";
@@ -27,7 +27,7 @@ const Map = ({ navigation }) => {
                 latitudeDelta: 0.0421,
                 longitudeDelta: 0.0421,
             });
-            console.log(position);
+            // console.log(position);
         });
 
         // GET listado de restaurantes
@@ -50,7 +50,6 @@ const Map = ({ navigation }) => {
             });
             const responseJson = await response.json();
             let restaurantsList = [];
-            console.log(responseJson.data);
             for (let i = 0; i < responseJson.data.length; i++) {
                 restaurantsList.push({
                     name: responseJson.data[i].business_name,
@@ -63,12 +62,14 @@ const Map = ({ navigation }) => {
             }
             setRestaurants(restaurantsList);
             restaurants.map((res) => {
+                console.log(res.name);
                 console.log(res.position);
             })
         } catch (error) {
             console.log(error);
         }
     };
+
     // const LATITUDE_DELTA = 0.009;
     // const LONGITUDE_DELTA = 0.009;
     // const LATITUDE = 18.7934829;
@@ -120,11 +121,7 @@ const Map = ({ navigation }) => {
                     pitchEnabled={true}
                     rotateEnabled={true}
                 >
-                    {/* <Marker
-                        title="Yor are here"
-                        description="This is your current location"
-                        coordinate={position}
-                    /> */}
+
                     {restaurants.map((restaurant) => (
                         <Marker
                             key={restaurant.id}
@@ -132,6 +129,38 @@ const Map = ({ navigation }) => {
                             title={restaurant.name}
                         />
                     ))}
+{/* 
+                        <Marker
+                            key={1}
+                            coordinate={{longitude:-64.19128761039116, latitude: -31.42326399709404}}
+                            title='Gloton'
+                        />
+                        <Marker
+                            key={2}
+                            coordinate={{longitude:-64.19249936652803, latitude: -31.42456402081326}}
+                            title='Patagonia'
+                        />
+                        <Marker
+                            key={3}
+                            coordinate={{longitude:-64.19267567600468, latitude: -31.42508439390338}}
+                            title='Krake'
+                        />
+                        <Marker
+                            key={4}
+                            coordinate={{longitude:-64.16888845736764, latitude: -31.477719375243016}}
+                            title='Cuatro catorce'
+                        />
+                        <Marker
+                            key={5}
+                            coordinate={{longitude:-64.19167119127195, latitude: -31.424377157497258}}
+                            title='Homies'
+                        />
+                        <Marker
+                            key={6}
+                            coordinate={{longitude:-64.19166670294464, latitude: -31.423218764195727}}
+                            title='The Journey'
+                        /> */}
+
                 </MapView>
                 {/* <MapView
                 style={Styles.map}
