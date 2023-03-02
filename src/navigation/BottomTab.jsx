@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { Text, View, StyleSheet } from "react-native";
 // screens
 import HomeScreen from "../screens/HomeScreen";
@@ -16,6 +16,7 @@ import { useNavigation } from "@react-navigation/native";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 // components
 import CreateReservation from "../components/CreateReservation";
+import CreateReservationModal from "../components/CreateReservationModal";
 // icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 
@@ -69,6 +70,7 @@ const HomeStack = ({ route: { params } }) => {
 
 const BottomTab = ({}) => {
     const navigation = useNavigation();
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
 
     function HomeScreenHeader() {
         return (
@@ -120,7 +122,7 @@ const BottomTab = ({}) => {
                         color="grey"
                         style={{ right: 0, position: "absolute" }}
                         onPress={() => {
-                            navigation.navigate("Favorites");
+                            navigation.navigate("Favorites", { params: { isLoggedIn:{isLoggedIn}, setIsLoggedIn:{setIsLoggedIn} } });
                         }}
                     />
                 </View>
@@ -179,7 +181,13 @@ const BottomTab = ({}) => {
                 component={Map}
                 options={{ headerShown: false }}
             />
-            <Tab.Screen name="Nueva" component={CreateReservation} />
+            <Tab.Screen
+                name="Nueva"
+                component={CreateReservation}
+                options={{
+                    tabBarButton: () => <CreateReservationModal />,
+                }}
+            />
             <Tab.Screen name="Reservas" component={Reservations} />
             <Tab.Screen name="Usuario" component={Login} />
         </Tab.Navigator>

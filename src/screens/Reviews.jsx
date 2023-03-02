@@ -23,22 +23,26 @@ const Reviews = ({ navigation, business }) => {
 
     const comments = [
         {
+            id: 1,
             userName: "Mateo",
             userImg: "https://picsum.photos/200",
             comment: '"Lorem ipsum dolor sit amet"',
         },
         {
+            id: 2,
             userName: "Franco",
             userImg: "https://picsum.photos/200",
             comment:
                 '"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam imperdiet egestas dignissim. Morbi consectetur, nulla eget blandit accumsan, nulla turpis varius nunc, non hendrerit nunc dui at ligula."',
         },
         {
+            id: 3,
             userName: "Lucía",
             userImg: "https://picsum.photos/200",
             comment: '"Lorem ipsum dolor sit amet"',
         },
         {
+            id: 4,
             userName: "Guido",
             userImg: "https://picsum.photos/200",
             comment:

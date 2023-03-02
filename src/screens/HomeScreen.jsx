@@ -3,6 +3,7 @@ import { Text, View, ScrollView, TextInput, StyleSheet } from "react-native";
 import { Chip } from "react-native-paper";
 import BusinessCard from "../components/BusinessCard";
 import Api from "../helper/Api";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 const HomeScreen = ({ navigation }) => {
     const [searchText, setSearchText] = useState("");
@@ -161,22 +162,32 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
-    // const filteredRestaurants = restaurants.filter(
-    //     (restaurant) =>
-    //         !selectedCategory || restaurant.category === selectedCategory
-    // );
-
     return (
         <View style={Styles.mainContainer}>
             {/* Search TextInput */}
-            <TextInput
-                style={Styles.textInput}
-                placeholder="Buscar restaurantes"
-                placeholderTextColor="#000"
-                onChangeText={(text) => setSearchText(text)}
-                onSubmitEditing={() => getSearchBusiness(searchText)}
-                value={searchText}
-            />
+            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff',
+                            margin: 10, maxHeight: 50
+                        }}>
+                <Ionicons style={{ padding: 10 }}
+                        name="search-outline"
+                        size={20}
+                        color="#000"/>
+                <TextInput
+                    // style={Styles.textInput}
+                    style={{ flex: 1, paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 0, backgroundColor: '#fff', color: '#424242' }}
+                    placeholder="Buscar restaurantes"
+                    placeholderTextColor="#000"
+                    onChangeText={(text) => setSearchText(text)}
+                    onSubmitEditing={() => getSearchBusiness(searchText)}
+                    value={searchText}
+                />
+                <Ionicons style={{ padding: 10 }}
+                        name="close"
+                        size={20}
+                        color="#000"
+                        onPress={() => {setSearchText('')}}
+                        />
+            </View>
 
             {/* Categories Filters */}
             <View style={Styles.categFilterContainer}>
