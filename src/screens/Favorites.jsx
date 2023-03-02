@@ -1,8 +1,9 @@
 import React from "react";
 import { Image, View, Text } from "react-native";
 import { StyleSheet } from "react-native";
+import UserLogin from "../components/UserLogin";
 
-const Favorites = ({ navigation }) => {
+const Favorites = ({ navigation, isLoggedIn, setIsLoggedIn }) => {
     let favorites = [
         {
             id: 1,
@@ -21,17 +22,23 @@ const Favorites = ({ navigation }) => {
         },
     ];
 
+    console.log(isLoggedIn);
+
     return (
         <View style={Styles.mainContainer}>
-            {favorites.map((business) => (
-                <View style={Styles.businessContainer} key={business.id}>
-                    <Image
-                        style={Styles.image}
-                        source={{ uri: business.img }}
-                    />
-                    <Text style={Styles.title}>{business.name}</Text>
-                </View>
-            ))}
+            {isLoggedIn ? (
+                favorites.map((business) => (
+                    <View style={Styles.businessContainer} key={business.id}>
+                        <Image
+                            style={Styles.image}
+                            source={{ uri: business.img }}
+                        />
+                        <Text style={Styles.title}>{business.name}</Text>
+                    </View>
+                ))
+                ) : (
+                <UserLogin />
+                )}
         </View>
     );
 };

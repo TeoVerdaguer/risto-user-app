@@ -19,9 +19,9 @@ const RestaurantsList = ({ navigation }) => {
                     "Content-Type": "application/json",
                 },
             });
-            const responseJson = await response.json();
-            console.log(responseJson);
-            setProvincias(responseJson.data);
+            const {data} = await response.json();
+            console.log(data);
+            setProvincias(data);
         } catch (error) {
             console.log(error);
         }
@@ -39,9 +39,8 @@ const RestaurantsList = ({ navigation }) => {
                     "Content-Type": "application/json",
                 },
             });
-            const responseJson = await response.json();
-            console.log(responseJson);
-            setRestaurant(responseJson.data);
+            const {data} = await response.json();
+            setRestaurant(data);
         } catch (error) {
             console.log(error);
         }

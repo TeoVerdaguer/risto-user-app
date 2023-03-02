@@ -3,6 +3,7 @@ import { Text, View, ScrollView, TextInput, StyleSheet } from "react-native";
 import { Chip } from "react-native-paper";
 import BusinessCard from "../components/BusinessCard";
 import Api from "../helper/Api";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 const HomeScreen = ({ navigation }) => {
     const [searchText, setSearchText] = useState("");
@@ -51,13 +52,13 @@ const HomeScreen = ({ navigation }) => {
                     "Content-Type": "application/json",
                 },
             });
-            const responseJson = await response.json();
+            const {data} = await response.json();
 
             let categoriesList = [];
-            for (let i = 0; i < responseJson.data.length; i++) {
+            for (let i = 0; i < data.length; i++) {
                 categoriesList.push({
-                    name: responseJson.data[i].business_category_name,
-                    id: responseJson.data[i].business_category_id,
+                    name: data[i].business_category_name,
+                    id: data[i].business_category_id,
                 });
             }
             setCategories(categoriesList);
@@ -82,27 +83,14 @@ const HomeScreen = ({ navigation }) => {
                     "Content-Type": "application/json",
                 },
             });
-            const responseJson = await response.json();
-            let restaurantsList = [];
-            let image = "";
+            const {data} = await response.json();
 
-            for (let i = 0; i < responseJson.data.length; i++) {
-                if (
-                    responseJson.data[i] &&
-                    responseJson.data[i].resource_list.resource_image
-                ) {
-                    image = responseJson.data[i].resource_list.resource_image;
-                } else {
-                    image = "https://picsum.photos/200";
-                }
+            const restaurantsList = data.map((item) => ({
+                name: item.business_name,
+                id: item.business_id,
+                img: item.resource_list?.resource_image ?? "https://picsum.photos/200",
+            }));
 
-                restaurantsList.push({
-                    name: responseJson.data[i].business_name,
-                    id: responseJson.data[i].business_id,
-                    img: image,
-                    tags: responseJson.data[i].business_tags,
-                });
-            }
             setRestaurants(restaurantsList);
         } catch (error) {
             console.log(error);
@@ -125,28 +113,14 @@ const HomeScreen = ({ navigation }) => {
                     "Content-Type": "application/json",
                 },
             });
-            const responseJson = await response.json();
+            const {data} = await response.json();
 
-            let restaurantsList = [];
-            let image = "";
+            const restaurantsList = data.map((item) => ({
+                name: item.business_name,
+                id: item.business_id,
+                img: item.resource_list?.resource_image ?? "https://picsum.photos/200",
+            }));
 
-            for (let i = 0; i < responseJson.data.length; i++) {
-                if (
-                    responseJson.data[i] &&
-                    responseJson.data[i].resource_list.resource_image
-                ) {
-                    image = responseJson.data[i].resource_list.resource_image;
-                } else {
-                    image = "https://picsum.photos/200";
-                }
-
-                restaurantsList.push({
-                    name: responseJson.data[i].business_name,
-                    id: responseJson.data[i].business_id,
-                    img: image,
-                    tags: responseJson.data[i].business_tags,
-                });
-            }
             setRestaurants(restaurantsList);
         } catch (error) {
             console.log(error);
@@ -171,28 +145,14 @@ const HomeScreen = ({ navigation }) => {
                         "Content-Type": "application/json",
                     },
                 });
-                const responseJson = await response.json();
-                let restaurantsList = [];
-                let image = "";
+                const {data} = await response.json();
 
-                for (let i = 0; i < responseJson.data.length; i++) {
-                    if (
-                        responseJson.data[i] &&
-                        responseJson.data[i].resource_list.resource_image
-                    ) {
-                        image =
-                            responseJson.data[i].resource_list.resource_image;
-                    } else {
-                        image = "https://picsum.photos/200";
-                    }
+                const restaurantsList = data.map((item) => ({
+                    name: item.business_name,
+                    id: item.business_id,
+                    img: item.resource_list?.resource_image ?? "https://picsum.photos/200",
+                }));
 
-                    restaurantsList.push({
-                        name: responseJson.data[i].business_name,
-                        id: responseJson.data[i].business_id,
-                        img: image,
-                        tags: responseJson.data[i].business_tags,
-                    });
-                }
                 setRestaurants(restaurantsList);
             } catch (error) {
                 console.log(error);
@@ -202,22 +162,32 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
-    // const filteredRestaurants = restaurants.filter(
-    //     (restaurant) =>
-    //         !selectedCategory || restaurant.category === selectedCategory
-    // );
-
     return (
         <View style={Styles.mainContainer}>
             {/* Search TextInput */}
-            <TextInput
-                style={Styles.textInput}
-                placeholder="Buscar restaurantes"
-                placeholderTextColor="#000"
-                onChangeText={(text) => setSearchText(text)}
-                onSubmitEditing={() => getSearchBusiness(searchText)}
-                value={searchText}
-            />
+            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff',
+                            margin: 10, maxHeight: 50
+                        }}>
+                <Ionicons style={{ padding: 10 }}
+                        name="search-outline"
+                        size={20}
+                        color="#000"/>
+                <TextInput
+                    // style={Styles.textInput}
+                    style={{ flex: 1, paddingTop: 10, paddingRight: 10, paddingBottom: 10, paddingLeft: 0, backgroundColor: '#fff', color: '#424242' }}
+                    placeholder="Buscar restaurantes"
+                    placeholderTextColor="#000"
+                    onChangeText={(text) => setSearchText(text)}
+                    onSubmitEditing={() => getSearchBusiness(searchText)}
+                    value={searchText}
+                />
+                <Ionicons style={{ padding: 10 }}
+                        name="close"
+                        size={20}
+                        color="#000"
+                        onPress={() => {setSearchText('')}}
+                        />
+            </View>
 
             {/* Categories Filters */}
             <View style={Styles.categFilterContainer}>

@@ -1,20 +1,24 @@
-import React from "react";
+import React, {useState} from "react";
+import { Text, View, StyleSheet } from "react-native";
+// screens
 import HomeScreen from "../screens/HomeScreen";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Map from "../screens/Map";
-import CreateReservation from "../components/CreateReservation";
 import Reservations from "../screens/Reservations";
 import Login from "../screens/Login";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import { Text, View } from "react-native";
-import { StyleSheet } from "react-native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import RestaurantDetail from "../screens/RestaurantDetail";
-import { useNavigation } from "@react-navigation/native";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import Favorites from "../screens/Favorites";
 import Reviews from "../screens/Reviews";
 import RateRestaurant from "../screens/RateRestaurant";
+import RestaurantDetail from "../screens/RestaurantDetail";
+// navigation
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+// components
+import CreateReservation from "../components/CreateReservation";
+import CreateReservationModal from "../components/CreateReservationModal";
+// icons
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -66,6 +70,7 @@ const HomeStack = ({ route: { params } }) => {
 
 const BottomTab = ({}) => {
     const navigation = useNavigation();
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
 
     function HomeScreenHeader() {
         return (
@@ -117,7 +122,7 @@ const BottomTab = ({}) => {
                         color="grey"
                         style={{ right: 0, position: "absolute" }}
                         onPress={() => {
-                            navigation.navigate("Favorites");
+                            navigation.navigate("Favorites", { params: { isLoggedIn:{isLoggedIn}, setIsLoggedIn:{setIsLoggedIn} } });
                         }}
                     />
                 </View>
@@ -176,7 +181,13 @@ const BottomTab = ({}) => {
                 component={Map}
                 options={{ headerShown: false }}
             />
-            <Tab.Screen name="Nueva" component={CreateReservation} />
+            <Tab.Screen
+                name="Nueva"
+                component={CreateReservation}
+                options={{
+                    tabBarButton: () => <CreateReservationModal />,
+                }}
+            />
             <Tab.Screen name="Reservas" component={Reservations} />
             <Tab.Screen name="Usuario" component={Login} />
         </Tab.Navigator>

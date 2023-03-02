@@ -61,30 +61,30 @@ const RestaurantDetail = ({ route, navigation }) => {
                     "Content-Type": "application/json",
                 },
             });
-            const responseJson = await response.json();
+            const {data} = await response.json();
 
             let image = "";
             if (
-                responseJson.data.resource_list.length > 0 &&
-                responseJson.data.resource_list[0].resource_image
+                data.resource_list.length > 0 &&
+                data.resource_list[0].resource_image
             ) {
                 for (
                     let i = 0;
-                    i <= responseJson.data.resource_list.length;
+                    i <= data.resource_list.length;
                     i++
                 ) {
-                    if (responseJson.data.resource_list[i]) {
+                    if (data.resource_list[i]) {
                         images.push(
-                            responseJson.data.resource_list[i].resource_image
+                            data.resource_list[i].resource_image
                         );
                     }
                 }
             }
             let businessData = {
                 img: image,
-                name: responseJson.data.business_name,
-                address: responseJson.data.business_address,
-                id: responseJson.data.business_id,
+                name: data.business_name,
+                address: data.business_address,
+                id: data.business_id,
             };
             setImages(images);
             setBusiness(businessData);

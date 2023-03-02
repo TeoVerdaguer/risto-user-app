@@ -37,14 +37,14 @@ export default class Api {
                     "Content-Type": "application/json",
                 },
             });
-            const responseJson = await response.json();
+            const {data} = await response.json();
 
             let categoriesList = [];
 
-            for (let i = 0; i < responseJson.data.length; i++) {
+            for (let i = 0; i < data.length; i++) {
                 categoriesList.push({
-                    name: responseJson.data[i].business_category_name,
-                    id: responseJson.data[i].business_category_id,
+                    name: data[i].business_category_name,
+                    id: data[i].business_category_id,
                 });
             }
             setCategories(categoriesList);
