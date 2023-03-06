@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TextInput, FlatList, Image, TouchableOpacity } from "react-native";
+import {
+    StyleSheet,
+    View,
+    TextInput,
+    FlatList,
+    Image,
+    TouchableOpacity,
+} from "react-native";
 import { Button, Text } from "@rneui/base";
 import Modal from "react-native-modal";
 // icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 // create reservation component
 import CreateReservation from "./CreateReservation";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 /**
  * @desc Returns restaurants which match the searched text
@@ -16,7 +24,8 @@ const CreateReservationModal = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [restaurantsList, setRestaurantsList] = useState([]);
     const [restaurantName, setRestaurantName] = useState(null);
-    const [searchText, setSearchText] = useState('');
+    const [searchText, setSearchText] = useState("");
+    const [disableInput, setDisableInput] = useState(true);
 
     useEffect(() => {
         setRestaurantsList([]);
@@ -27,10 +36,10 @@ const CreateReservationModal = () => {
     }, [restaurantsList]);
 
     /**
-    * @desc Gets list of restaurants that match the searched text
-    * @param {string} text
-    * @returns void
-    */
+     * @desc Gets list of restaurants that match the searched text
+     * @param {string} text
+     * @returns void
+     */
     const searchRestaurant = async (text) => {
         const province = 6; // TODO: get province
         text = text.toLowerCase();
@@ -60,29 +69,33 @@ const CreateReservationModal = () => {
     };
 
     /**
-    * @desc Resets the searched text and the restaurants list
-    * @returns void
-    */
+     * @desc Resets the searched text and the restaurants list
+     * @returns void
+     */
     const resetSearchText = () => {
-        setSearchText('');
+        setSearchText("");
         setRestaurantsList([]);
         setRestaurantName(null);
+        setDisableInput(true);
     };
 
     /**
-    * @desc Sets the selected restaurant to make reservation
-    * @param {number} id
-    * @returns void
-    */
+     * @desc Sets the selected restaurant to make reservation
+     * @param {number} id
+     * @returns void
+     */
     const setSelectedRestaurant = (name) => {
         setRestaurantName(name);
         setSearchText(name);
-    }
+    };
 
-    const Item = ({name, img, id}) => (
-        <TouchableOpacity 
+    const Item = ({ name, img, id }) => (
+        <TouchableOpacity
             style={Styles.flatListItem}
-            onPress={() => {setSelectedRestaurant(name)}}
+            onPress={() => {
+                setSelectedRestaurant(name);
+                setDisableInput(false);
+            }}
         >
             <Image style={Styles.listItemImg} source={{ uri: img }} />
             <Text style={Styles.listItemName}>{name}</Text>
@@ -90,15 +103,21 @@ const CreateReservationModal = () => {
     );
 
     return (
-        <>
-            <Button
-                onPress={() => {
-                    setModalVisible(true);
-                }}
-                buttonStyle={Styles.buttonStyle}
-                icon={<Ionicons name={"add-sharp"} size={22} color={"#FFF"} />}
-            />
-            <View style={Styles.container}>
+        <View style={{}}>
+            <KeyboardAwareScrollView
+                style={Styles.container}
+                extraHeight={120}
+                enableOnAndroid={true}
+            >
+                <Button
+                    onPress={() => {
+                        setModalVisible(true);
+                    }}
+                    buttonStyle={Styles.buttonStyle}
+                    icon={
+                        <Ionicons name={"add-sharp"} size={22} color={"#FFF"} />
+                    }
+                />
                 <Modal
                     backdropOpacity={0.3}
                     isVisible={modalVisible}
@@ -118,7 +137,7 @@ const CreateReservationModal = () => {
                                 marginTop: 20,
                                 marginBottom: 0,
                                 maxHeight: 42,
-                                borderRadius: 10
+                                borderRadius: 10,
                             }}
                         >
                             <Ionicons
@@ -153,41 +172,53 @@ const CreateReservationModal = () => {
                                 color="#000"
                                 onPress={() => {
                                     resetSearchText();
-                                    
                                 }}
                             />
                         </View>
 
                         {restaurantsList.length > 0 && !restaurantName && (
-                        <FlatList
-                            style={Styles.flatList}
-                            data={restaurantsList}
-                            renderItem={({item}) => <Item name={item.name} img={item.img} id={item.id} />}
-                            keyExtractor={item => item.id}
-                            showsVerticalScrollIndicator={false}
-                         />
+                            <FlatList
+                                style={Styles.flatList}
+                                data={restaurantsList}
+                                renderItem={({ item }) => (
+                                    <Item
+                                        name={item.name}
+                                        img={item.img}
+                                        id={item.id}
+                                    />
+                                )}
+                                keyExtractor={(item) => item.id}
+                                showsVerticalScrollIndicator={false}
+                            />
                         )}
 
                         {searchText.length == 0 || restaurantName ? (
-                            <CreateReservation restaurantName={restaurantName}/>
-                        ): null}
+                            <CreateReservation
+                                restaurantName={restaurantName}
+                                disableInput={disableInput}
+                            />
+                        ) : null}
                     </View>
                 </Modal>
-            </View>
-        </>
+            </KeyboardAwareScrollView>
+        </View>
     );
 };
 
 const IOS = Platform.OS === "ios";
 
 const Styles = StyleSheet.create({
+    container: {
+        paddingHorizontal: "auto",
+        width: 40,
+    },
     contentView: {
         justifyContent: "flex-end",
-        margin: 0
+        margin: 0,
     },
     content: {
-        backgroundColor: '#F1F1F1',
-        height: IOS ? '35%' : '40%',
+        backgroundColor: "#F1F1F1",
+        height: IOS ? "35%" : "40%",
         alignItems: "center",
         borderTopRightRadius: 17,
         borderTopLeftRadius: 17,
@@ -205,27 +236,27 @@ const Styles = StyleSheet.create({
         padding: 0,
     },
     flatList: {
-        backgroundColor: '#fff',
-        width: '90%',
+        backgroundColor: "#fff",
+        width: "90%",
         borderRadius: 10,
-        marginTop: 10
+        marginTop: 10,
     },
     flatListItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         height: 50,
-        margin: 10
+        margin: 10,
     },
     listItemImg: {
-        height: '100%',
-        width: '15%'
+        height: "100%",
+        width: "15%",
     },
     listItemName: {
-        color: '#000',
+        color: "#000",
         fontSize: 15,
-        fontWeight: '400',
-        marginLeft: 15
-    }
+        fontWeight: "400",
+        marginLeft: 15,
+    },
 });
 
 export default CreateReservationModal;

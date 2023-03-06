@@ -122,7 +122,8 @@ const BottomTab = ({}) => {
                         color="grey"
                         style={{ right: 0, position: "absolute" }}
                         onPress={() => {
-                            navigation.navigate("Favorites", { params: { isLoggedIn:{isLoggedIn}, setIsLoggedIn:{setIsLoggedIn} } });
+                            // navigation.navigate("Favorites", { params: { isLoggedIn:{isLoggedIn}, setIsLoggedIn:{setIsLoggedIn} } });
+                            navigation.navigate("Favorites");
                         }}
                     />
                 </View>

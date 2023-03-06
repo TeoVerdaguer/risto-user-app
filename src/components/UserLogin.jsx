@@ -24,6 +24,10 @@ const UserLogin = ({ navigation }) => {
         isSignedIn();
     }, []);
 
+    /**
+    * @desc launches sign in with google modal
+    * @returns void
+    */
     const signIn = async () => {
         try {
             await GoogleSignin.hasPlayServices();
@@ -47,6 +51,10 @@ const UserLogin = ({ navigation }) => {
         }
     };
 
+    /**
+     * @desc Checks if user is signed in
+     * @returns void
+     */
     const isSignedIn = async () => {
         const isSignedIn = await GoogleSignin.isSignedIn();
         if (!!isSignedIn) {
@@ -56,6 +64,10 @@ const UserLogin = ({ navigation }) => {
         }
     };
 
+    /**
+     * @desc Gets user info from google account
+     * @returns void
+     */
     const getCurrentUserInfo = async () => {
         try {
             const userInfo = await GoogleSignin.signInSilently();
@@ -71,6 +83,10 @@ const UserLogin = ({ navigation }) => {
         }
     };
 
+    /**
+     * @desc Finishes user session
+     * @returns void
+     */
     const signOut = async () => {
         try {
             await GoogleSignin.revokeAccess();
@@ -81,6 +97,11 @@ const UserLogin = ({ navigation }) => {
         }
     };
 
+    /**
+     * @desc Creates a new user in the data base
+     * @param {object} userInfo
+     * @returns object
+     */
     const createUser = async (userInfo) => {
         try {
             const response = await fetch(
@@ -112,7 +133,7 @@ const UserLogin = ({ navigation }) => {
     return (
         <View style={Styles.container}>
             <Text style={Styles.title}>Ingresa a tu cuenta</Text>
-            {!user.idToken ? (
+            {!user.id ? (
                 <GoogleSigninButton
                     style={Styles.googleSignInBtn}
                     size={GoogleSigninButton.Size.Wide}
