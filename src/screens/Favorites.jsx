@@ -1,9 +1,35 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import { Image, View, Text } from "react-native";
 import { StyleSheet } from "react-native";
 import UserLogin from "../components/UserLogin";
+// Encrypted storage
+import EncryptedStorage from "react-native-encrypted-storage";
 
-const Favorites = ({ navigation, isLoggedIn, setIsLoggedIn }) => {
+const Favorites = ({ navigation }) => {
+
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    // Get user token
+    const retrieveUserToken = async () => {
+        try {
+            const token = await EncryptedStorage.getItem("user_token");
+
+            if (token) {
+                console.log(token);
+                setIsLoggedIn(true);
+                console.log("user is logged in");
+            } else {
+                console.log("token is undefined");
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    useEffect(() => {
+        retrieveUserToken();
+    }, []);
+
     let favorites = [
         {
             id: 1,
@@ -22,8 +48,6 @@ const Favorites = ({ navigation, isLoggedIn, setIsLoggedIn }) => {
         },
     ];
 
-    console.log(isLoggedIn);
-
     return (
         <View style={Styles.mainContainer}>
             {isLoggedIn ? (
@@ -36,9 +60,9 @@ const Favorites = ({ navigation, isLoggedIn, setIsLoggedIn }) => {
                         <Text style={Styles.title}>{business.name}</Text>
                     </View>
                 ))
-                ) : (
+            ) : (
                 <UserLogin />
-                )}
+            )}
         </View>
     );
 };

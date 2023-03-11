@@ -84,7 +84,7 @@ const HomeScreen = ({ navigation }) => {
                 },
             });
             const {data} = await response.json();
-
+            console.log(data);
             const restaurantsList = data.map((item) => ({
                 name: item.business_name,
                 id: item.business_id,
@@ -162,6 +162,11 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
+    const resetSearchText = () => {
+        setSearchText('');
+        getSearchBusiness('');
+    }
+
     return (
         <View style={Styles.mainContainer}>
             {/* Search TextInput */}
@@ -185,7 +190,7 @@ const HomeScreen = ({ navigation }) => {
                         name="close"
                         size={20}
                         color="#000"
-                        onPress={() => {setSearchText('')}}
+                        onPress={() => {resetSearchText()}}
                         />
             </View>
 

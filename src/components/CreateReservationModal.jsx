@@ -6,6 +6,7 @@ import {
     FlatList,
     Image,
     TouchableOpacity,
+    KeyboardAvoidingView,
 } from "react-native";
 import { Button, Text } from "@rneui/base";
 import Modal from "react-native-modal";
@@ -104,11 +105,7 @@ const CreateReservationModal = () => {
 
     return (
         <View style={{}}>
-            <KeyboardAwareScrollView
-                style={Styles.container}
-                extraHeight={120}
-                enableOnAndroid={true}
-            >
+            <View style={Styles.container}>
                 <Button
                     onPress={() => {
                         setModalVisible(true);
@@ -118,89 +115,97 @@ const CreateReservationModal = () => {
                         <Ionicons name={"add-sharp"} size={22} color={"#FFF"} />
                     }
                 />
+            </View>
+
+            {/* Modal to be shown or hidden */}
+            <KeyboardAvoidingView behavior="position">
                 <Modal
                     backdropOpacity={0.3}
                     isVisible={modalVisible}
                     onBackdropPress={() => setModalVisible(false)}
                     style={Styles.contentView}
                 >
-                    {/* Modal content */}
-                    <View style={Styles.content}>
-                        {/* Search TextInput */}
-                        <View
-                            style={{
-                                flexDirection: "row",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                backgroundColor: "#fff",
-                                marginHorizontal: 20,
-                                marginTop: 20,
-                                marginBottom: 0,
-                                maxHeight: 42,
-                                borderRadius: 10,
-                            }}
-                        >
-                            <Ionicons
-                                style={{ padding: 10 }}
-                                name="search-outline"
-                                size={20}
-                                color="#000"
-                            />
-                            <TextInput
-                                // style={Styles.textInput}
+                    
+                        {/* Modal content */}
+                        <View style={Styles.content}>
+                            {/* Search TextInput */}
+                            <View
                                 style={{
-                                    flex: 1,
-                                    paddingTop: 10,
-                                    paddingRight: 10,
-                                    paddingBottom: 10,
-                                    paddingLeft: 0,
+                                    flexDirection: "row",
+                                    justifyContent: "center",
+                                    alignItems: "center",
                                     backgroundColor: "#fff",
-                                    color: "#424242",
+                                    marginHorizontal: 20,
+                                    marginTop: 20,
+                                    marginBottom: 0,
+                                    maxHeight: 42,
+                                    borderRadius: 10,
                                 }}
-                                placeholder="Buscar restaurantes"
-                                placeholderTextColor="#000"
-                                onChangeText={(text) => setSearchText(text)}
-                                onSubmitEditing={() =>
-                                    searchRestaurant(searchText)
-                                }
-                                value={searchText}
-                            />
-                            <Ionicons
-                                style={{ padding: 10 }}
-                                name="close"
-                                size={20}
-                                color="#000"
-                                onPress={() => {
-                                    resetSearchText();
-                                }}
-                            />
+                            >
+                                <Ionicons
+                                    style={{ padding: 10 }}
+                                    name="search-outline"
+                                    size={20}
+                                    color="#000"
+                                />
+                                <TextInput
+                                    // style={Styles.textInput}
+                                    style={{
+                                        flex: 1,
+                                        paddingTop: 10,
+                                        paddingRight: 10,
+                                        paddingBottom: 10,
+                                        paddingLeft: 0,
+                                        backgroundColor: "#fff",
+                                        color: "#424242",
+                                    }}
+                                    placeholder="Buscar restaurantes"
+                                    placeholderTextColor="#000"
+                                    onChangeText={(text) => setSearchText(text)}
+                                    onSubmitEditing={() =>
+                                        searchRestaurant(searchText)
+                                    }
+                                    value={searchText}
+                                />
+                                <Ionicons
+                                    style={{ padding: 10 }}
+                                    name="close"
+                                    size={20}
+                                    color="#000"
+                                    onPress={() => {
+                                        resetSearchText();
+                                    }}
+                                />
+                            </View>
+
+                            {restaurantsList.length > 0 && !restaurantName && (
+                                <FlatList
+                                    style={Styles.flatList}
+                                    data={restaurantsList}
+                                    renderItem={({ item }) => (
+                                        <Item
+                                            name={item.name}
+                                            img={item.img}
+                                            id={item.id}
+                                        />
+                                    )}
+                                    keyExtractor={(item) => item.id}
+                                    showsVerticalScrollIndicator={false}
+                                />
+                            )}
+
+                            {searchText.length == 0 || restaurantName ? (
+                                <CreateReservation
+                                    restaurantName={restaurantName}
+                                    disableInput={disableInput}
+                                    setDisableInput={setDisableInput}
+                                    setModalVisible={setModalVisible}
+                                />
+                            ) : null}
                         </View>
-
-                        {restaurantsList.length > 0 && !restaurantName && (
-                            <FlatList
-                                style={Styles.flatList}
-                                data={restaurantsList}
-                                renderItem={({ item }) => (
-                                    <Item
-                                        name={item.name}
-                                        img={item.img}
-                                        id={item.id}
-                                    />
-                                )}
-                                keyExtractor={(item) => item.id}
-                                showsVerticalScrollIndicator={false}
-                            />
-                        )}
-
-                        {searchText.length == 0 || restaurantName ? (
-                            <CreateReservation
-                                restaurantName={restaurantName}
-                                disableInput={disableInput}
-                            />
-                        ) : null}
-                    </View>
+                    
                 </Modal>
-            </KeyboardAwareScrollView>
+            </KeyboardAvoidingView>
         </View>
     );
 };

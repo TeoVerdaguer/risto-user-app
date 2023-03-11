@@ -8,6 +8,8 @@ import {
     statusCodes,
 } from "@react-native-google-signin/google-signin";
 import { Colors } from "../helper/Colors";
+// Encrypted storage
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const UserLogin = ({ navigation }) => {
     const [user, setUser] = useState({});
@@ -24,6 +26,15 @@ const UserLogin = ({ navigation }) => {
         isSignedIn();
     }, []);
 
+    // Save user token in Encrypted storage
+    const storeUserToken = async (token) => {
+        try {
+            await EncryptedStorage.setItem("user_token", token);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     /**
     * @desc launches sign in with google modal
     * @returns void
@@ -36,6 +47,7 @@ const UserLogin = ({ navigation }) => {
             setUser(userInfo);
             console.log(userInfo.user);
             createUser(userInfo.user);
+            storeUserToken(userInfo.user.id);
         } catch (error) {
             console.log("Message____", error.message);
             console.log("Message____", error);
@@ -57,7 +69,7 @@ const UserLogin = ({ navigation }) => {
      */
     const isSignedIn = async () => {
         const isSignedIn = await GoogleSignin.isSignedIn();
-        if (!!isSignedIn) {
+        if (isSignedIn) {
             getCurrentUserInfo();
         } else {
             console.log("Please login");
@@ -74,6 +86,7 @@ const UserLogin = ({ navigation }) => {
             console.log("edit___", user);
             setUser(userInfo);
             console.log(userInfo);
+            storeUserToken(userInfo.user.id);
         } catch (error) {
             if (error.code === statusCodes.SIGN_IN_REQUIRED) {
                 console.log("User has not signed in yet");
@@ -91,6 +104,7 @@ const UserLogin = ({ navigation }) => {
         try {
             await GoogleSignin.revokeAccess();
             await GoogleSignin.signOut();
+            storeUserToken(undefined);
             setUser({});
         } catch (error) {
             console.log(error.code);

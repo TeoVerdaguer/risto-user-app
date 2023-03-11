@@ -6,8 +6,15 @@ import DatePicker from "react-native-date-picker";
 import { StyleSheet } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { FlatList } from "react-native-gesture-handler";
+import ThankYou from "./ThankYou";
+import SpecialRequests from "./SpecialRequests";
 
-const CreateReservation = ({ restaurantName, disableInput }) => {
+const CreateReservation = ({
+    restaurantName,
+    disableInput,
+    setDisableInput,
+    setModalVisible,
+}) => {
     const widthScreen = Dimensions.get("window").width;
     const today = new Date();
     const endDate = new Date("2023-12-31");
@@ -17,11 +24,14 @@ const CreateReservation = ({ restaurantName, disableInput }) => {
     const [openDate, setOpenDate] = useState(false);
     const [openTime, setOpenTime] = useState(false);
     const [restaurant, setRestaurant] = useState({});
+    const [availableTimes, setAvailableTimes] = useState({});
+    const [restaurantImg, setRestaurantImg] = useState({});
+    const [showThankYouMsg, setShowThankYouMsg] = useState(false);
+    const [showSpecialRequestsModal, setShowSpecialRequestsModal] = useState(false);
 
     useEffect(() => {
         restaurantName ? getRestaurant(restaurantName) : null;
     }, []);
-
 
     /**
      * @desc Gets list of restaurants that match the searched text
@@ -40,7 +50,6 @@ const CreateReservation = ({ restaurantName, disableInput }) => {
                 },
             });
             const { data } = await response.json();
-
             const restaurant = {
                 name: data[0].business_name,
                 id: data[0].business_id,
@@ -50,101 +59,53 @@ const CreateReservation = ({ restaurantName, disableInput }) => {
             };
 
             setRestaurant(restaurant);
+            setRestaurantImg(restaurant.img);
         } catch (error) {
             console.log(error);
         }
     };
 
     /**
-     * @desc creates a new reservation
-     * @param {number} id
+     * @desc Gets list of available times in a business with the date and party size passed
+     * @param {number} restaurantId
+     * @param {string} date
+     * @param {number} partySize
      * @returns void
      */
-    const reserve = async  (restaurant, date, time, partySize) => {
-
-        const client_id = '109990122989172956878';
-        const client_phone = '3513288231';
-        // Format: YYYY-MM-DD
-        const reservation_date = `${date.toISOString().split('T')[0]} ${time}`;
-        const province = 6; // TODO: get province
-        // const URL = `https://risto-api-dev.dexterdevelopment.io/business/get-business-by-name/?province=${province}&business_name=${name}`;
-        // try {
-        //     const response = await fetch(URL, {
-        //         method: "POST",
-        //         headers: {
-        //             Accept: "application/json",
-        //             "Content-Type": "application/json",
-        //         },
-        //         body: {
-        //             "business":{restaurant},
-        //             "reservation_size":{partySize},
-        //             "client_id":{client_id},
-        //             "reservation_date":{reservation_date},
-        //             "reservation_phone":{client_phone},
-        //             "special_reservation":false,
-        //             // "special_reservation_type":"ANIVERSARIO"
-        //         }
-        //     });
-        //     const { data } = await response.json();
-
-        //     const restaurant = {
-        //         name: data[0].business_name,
-        //         id: data[0].business_id,
-        //         img:
-        //             data[0].resource_list?.resource_image ??
-        //             "https://picsum.photos/200",
-        //     };
-
-        //     setRestaurant(restaurant);
-        // } catch (error) {
-        //     console.log(error);
-        // }
-
-        console.log('restaurant: ' + restaurant.name);
-        console.log('restaurant id: ' + restaurant.id);
-        console.log(reservation_date);
-        console.log('party size: ' + partySize);
+    const getAvailableTimes = async (restaurantId, date, partySize) => {
+        // Date format: YYYY-MM-DD
+        const formattedDate = `${date.toISOString().split("T")[0]}`;
+        const URL = `https://risto-api-dev.dexterdevelopment.io/reservation/get-reservation-availability/?reservation_date=${formattedDate}&business=${restaurantId}&reservation_size=${partySize}`;
+        console.log(URL);
+        try {
+            const response = await fetch(URL, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            });
+            const responseJSON = await response.json();
+            responseJSON.error
+                ? console.log("error: " + responseJSON.message)
+                : null;
+            const data = responseJSON.data;
+            setAvailableTimes(data);
+        } catch (error) {
+            console.log(error);
+        }
     };
 
-    const availableTimes = [
-        {
-            time: "12:00",
-            id: 0,
-        },
-        {
-            time: "12:15",
-            id: 1,
-        },
-        {
-            time: "12:30",
-            id: 2,
-        },
-        {
-            time: "12:45",
-            id: 3,
-        },
-        {
-            time: "12:45",
-            id: 4,
-        },
-        {
-            time: "12:45",
-            id: 5,
-        },
-        {
-            time: "12:45",
-            id: 6,
-        },
-        {
-            time: "12:45",
-            id: 7,
-        },
-        {
-            time: "12:45",
-            id: 8,
-        },
-    ];
+    /**
+     * @desc gets available times and shows time select modal
+     * @returns void
+     */
+    const openTimeModal = () => {
+        getAvailableTimes(restaurant.id, date, partySize);
+        setOpenTime(true);
+    };
 
+    // Item to be rendered in the available times list
     const Item = ({ time }) => (
         <TouchableOpacity
             style={{
@@ -185,7 +146,11 @@ const CreateReservation = ({ restaurantName, disableInput }) => {
                 {/* Date picker button */}
                 <TouchableOpacity
                     disabled={disableInput}
-                    style={disableInput ? Styles.datePickerDisabled : Styles.datePicker}
+                    style={
+                        disableInput
+                            ? Styles.datePickerDisabled
+                            : Styles.datePicker
+                    }
                     onPress={() => setOpenDate(true)}
                 >
                     <Text style={Styles.mainText}>
@@ -195,8 +160,12 @@ const CreateReservation = ({ restaurantName, disableInput }) => {
                 {/* Time picker button */}
                 <TouchableOpacity
                     disabled={disableInput}
-                    style={disableInput ? Styles.timePickerDisabled : Styles.timePicker}
-                    onPress={() => setOpenTime(true)}
+                    style={
+                        disableInput
+                            ? Styles.timePickerDisabled
+                            : Styles.timePicker
+                    }
+                    onPress={() => openTimeModal()}
                 >
                     <Text style={Styles.mainText}>{time}</Text>
                 </TouchableOpacity>
@@ -212,8 +181,10 @@ const CreateReservation = ({ restaurantName, disableInput }) => {
                 maximumDate={endDate}
                 onConfirm={(date) => {
                     setDate(date);
+                    setOpenDate(false);
                 }}
                 onCancel={() => {
+                    setOpenDate(false);
                 }}
             />
 
@@ -232,6 +203,7 @@ const CreateReservation = ({ restaurantName, disableInput }) => {
                         borderRadius: 10,
                         width: "55%",
                         margin: 100,
+                        maxHeight: "50%",
                         backgroundColor: "#FFF",
                     }}
                 >
@@ -256,10 +228,12 @@ const CreateReservation = ({ restaurantName, disableInput }) => {
                             />
                         </TouchableOpacity>
                     </View>
-                    {availableTimes.length > 0 && (
+                    {availableTimes?.length > 0 && (
                         <FlatList
                             data={availableTimes}
-                            renderItem={({ item }) => <Item time={item.time} />}
+                            renderItem={({ item }) => (
+                                <Item time={item.time.substr(11, 5)} />
+                            )}
                             keyExtractor={(item) => item.id}
                             showsVerticalScrollIndicator={false}
                         />
@@ -269,11 +243,35 @@ const CreateReservation = ({ restaurantName, disableInput }) => {
 
             <TouchableOpacity
                 disabled={disableInput}
-                style={ disableInput ? Styles.reserveBtnDisabled : Styles.reserveBtn}
-                onPress={() => reserve(restaurant, date, time, partySize)}
+                style={
+                    disableInput ? Styles.reserveBtnDisabled : Styles.reserveBtn
+                }
+                onPress={() => setShowSpecialRequestsModal(true)}
             >
                 <Text style={Styles.btnText}>Reservar</Text>
             </TouchableOpacity>
+
+            {/* Special requests screen */}
+            <SpecialRequests
+                showSpecialRequestsModal={showSpecialRequestsModal}
+                setShowSpecialRequestsModal={setShowSpecialRequestsModal}
+                setShowThankYouMsg={setShowThankYouMsg}
+                restaurant={restaurant}
+                date={date}
+                time={time}
+                partySize={partySize}
+            />
+            {/* Thank you screen */}
+            <ThankYou
+                showThankYouMsg={showThankYouMsg}
+                setShowThankYouMsg={setShowThankYouMsg}
+                restaurantName={restaurantName}
+                restaurantImg={restaurantImg}
+                partySize={partySize}
+                date={date}
+                time={time}
+                setModalVisible={setModalVisible}
+            />
         </View>
     );
 };
@@ -324,7 +322,7 @@ const Styles = StyleSheet.create({
     dateContainer: {
         flexDirection: "row",
         alignItems: "center",
-        paddingVertical: 10
+        paddingVertical: 10,
     },
     datePicker: {
         backgroundColor: "#ffffff",
@@ -368,7 +366,7 @@ const Styles = StyleSheet.create({
         height: 50,
         marginTop: 10,
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
     },
     reserveBtnDisabled: {
         backgroundColor: "#D4D5DB",
@@ -377,7 +375,7 @@ const Styles = StyleSheet.create({
         marginTop: 10,
         alignItems: "center",
         justifyContent: "center",
-    },  
+    },
     btnText: {
         fontSize: 20,
         fontWeight: "700",

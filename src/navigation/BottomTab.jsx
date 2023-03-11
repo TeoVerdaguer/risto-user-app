@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import { Text, View, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Text, View, StyleSheet, AsyncStorageStatic } from "react-native";
 // screens
 import HomeScreen from "../screens/HomeScreen";
 import Map from "../screens/Map";
@@ -19,6 +19,8 @@ import CreateReservation from "../components/CreateReservation";
 import CreateReservationModal from "../components/CreateReservationModal";
 // icons
 import Ionicons from "react-native-vector-icons/Ionicons";
+// Encrypted storage
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -61,7 +63,7 @@ const HomeStack = ({ route: { params } }) => {
                 initialParams={params}
                 options={{ headerShown: false }}
             />
-            <Stack.Screen name="Favorites" component={Favorites} />
+            <Stack.Screen name="Favorites" component={Favorites} initialParams={params} />
             <Stack.Screen name="Reviews" component={Reviews} />
             <Stack.Screen name="RateRestaurant" component={RateRestaurant} />
         </Stack.Navigator>
@@ -70,7 +72,28 @@ const HomeStack = ({ route: { params } }) => {
 
 const BottomTab = ({}) => {
     const navigation = useNavigation();
-    const [isLoggedIn, setIsLoggedIn] = useState(true);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        retrieveUserToken();
+    }, []);
+
+    // Get user token
+    const retrieveUserToken = async () => {
+        try {
+            const token = await EncryptedStorage.getItem("user_token");
+
+            if (token) {
+                console.log(token);
+                setIsLoggedIn(true);
+                console.log('user is logged in');
+            } else {
+                console.log('token is undefined');
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     function HomeScreenHeader() {
         return (
@@ -122,8 +145,8 @@ const BottomTab = ({}) => {
                         color="grey"
                         style={{ right: 0, position: "absolute" }}
                         onPress={() => {
-                            // navigation.navigate("Favorites", { params: { isLoggedIn:{isLoggedIn}, setIsLoggedIn:{setIsLoggedIn} } });
-                            navigation.navigate("Favorites");
+                            navigation.navigate("Favorites", { params: { isLoggedIn: isLoggedIn, setIsLoggedIn: setIsLoggedIn } });
+                            // navigation.navigate("Favorites");
                         }}
                     />
                 </View>

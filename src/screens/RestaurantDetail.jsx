@@ -14,6 +14,9 @@ import NumericInput from "react-native-numeric-input";
 import DatePicker from "react-native-date-picker";
 import { StyleSheet } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+// Encrypted storage
+import EncryptedStorage from "react-native-encrypted-storage";
+import CreateReservation from "../components/CreateReservation";
 
 const RestaurantDetail = ({ route, navigation }) => {
     const widthScreen = Dimensions.get("window").width;
@@ -30,12 +33,15 @@ const RestaurantDetail = ({ route, navigation }) => {
     const [openDate, setOpenDate] = useState(false);
     const [openTime, setOpenTime] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
+    const [userToken, setUserToken] = useState('');
+    
     let msg = "";
 
     const firstRender = useRef(true);
 
     useEffect(() => {
         getBusinessDetail();
+        retrieveUserToken();
     }, []);
 
     useEffect(() => {
@@ -62,7 +68,7 @@ const RestaurantDetail = ({ route, navigation }) => {
                 },
             });
             const {data} = await response.json();
-
+            console.log(data);
             let image = "";
             if (
                 data.resource_list.length > 0 &&
@@ -89,6 +95,53 @@ const RestaurantDetail = ({ route, navigation }) => {
             setImages(images);
             setBusiness(businessData);
             setLoading(false);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    // Get user token
+    const retrieveUserToken = async () => {
+        console.log(userToken);
+        try {
+            const token = await EncryptedStorage.getItem("user_token");
+
+            if (token) {
+                console.log(token);
+                setUserToken(token);
+                console.log('user is logged in');
+            } else {
+                console.log('token is undefined');
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const addToFavorites = async (business) => {
+        const URL = `https://risto-api-dev.dexterdevelopment.io/business/add-favorite-business/`;
+
+        try {
+            const response = await fetch(URL, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    client: userToken,
+                    business: business
+                }),
+            });
+            const responseJSON = await response.json();
+            const data = responseJSON.data;
+            if (responseJSON.error) {
+                console.log('error en la reserva');
+                console.log(responseJSON.message);
+            } else {
+                console.log('agregado a favs completada');
+                setIsFavorite(true);
+            }
         } catch (error) {
             console.log(error);
         }
@@ -158,7 +211,7 @@ const RestaurantDetail = ({ route, navigation }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={() => {
-                        setIsFavorite(!isFavorite);
+                        addToFavorites(businessId);
                     }}
                 >
                     <Ionicons
@@ -208,69 +261,15 @@ const RestaurantDetail = ({ route, navigation }) => {
                 <View style={Styles.line} />
 
                 {/* Reservation modal */}
-                <View style={Styles.personsContainer}>
-                    <Text style={[Styles.mainText, Styles.boldText]}>
-                        Cuantos somos
-                    </Text>
-                    <NumericInput
-                        value={personsValue}
-                        onChange={(value) => setPersonsValue(value)}
-                        minValue={1}
-                        totalHeight={45}
-                        totalWidth={110}
-                    />
-                </View>
-                {/* Date picker */}
-                <View style={Styles.dateContainer}>
-                    <TouchableOpacity
-                        style={Styles.datePicker}
-                        onPress={() => setOpenDate(true)}
-                    >
-                        <Text style={Styles.mainText}>
-                            {date.toISOString().slice(0, 10)}
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={Styles.timePicker}
-                        onPress={() => setOpenTime(true)}
-                    >
-                        <Text style={Styles.mainText}>
-                            {date.toTimeString().slice(0, 5)}
-                        </Text>
-                    </TouchableOpacity>
+                <CreateReservation
+                    restaurantName={business.name}
+                />
 
-                    <DatePicker
-                        modal
-                        open={openDate}
-                        date={date}
-                        mode="date"
-                        minimumDate={today}
-                        onConfirm={(date) => {
-                            setOpenDate(false);
-                            setDate(date);
-                        }}
-                        onCancel={() => {
-                            setOpenDate(false);
-                        }}
-                    />
-                    <DatePicker
-                        modal
-                        open={openTime}
-                        date={date}
-                        mode="time"
-                        minuteInterval={15}
-                        onConfirm={(date) => {
-                            setOpenTime(false);
-                            setTime(date);
-                        }}
-                        onCancel={() => {
-                            setOpenTime(false);
-                        }}
-                    />
-                </View>
-                <TouchableOpacity style={Styles.reserveBtn}>
-                    <Text style={Styles.btnText}>Reservar</Text>
-                </TouchableOpacity>
+
+
+
+
+                
             </View>
         </View>
     );
