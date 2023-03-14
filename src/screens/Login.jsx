@@ -1,18 +1,42 @@
-import React from "react";
-import { View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text } from "react-native";
 import UserLogin from "../components/UserLogin";
 // Encrypted storage
 import EncryptedStorage from "react-native-encrypted-storage";
 
 const Login = ({ navigation }) => {
 
-    // Save user token in Encrypted storage
-    const storeUserToken = async (token) => {
+    const [userToken, setUserToken] = useState('');
+
+    useEffect(() => {
+        retrieveUserToken();
+    }, [userToken]);
+
+    /**
+     * @desc Gets user token from encrypted storage
+     * @returns void
+     */
+    const retrieveUserToken = async () => {
         try {
-            await EncryptedStorage.setItem("user_token", token);
+            const token = await EncryptedStorage.getItem("user_token");
+
+            if (token) {
+                setUserToken(token);
+                console.log("user is logged in");
+            } else {
+                console.log("token is undefined");
+            }
         } catch (error) {
             console.log(error);
         }
+    };
+
+    const LoggedInModal = () => {
+        return (
+            <View>
+                <Text>Ya iniciaste sesion</Text>
+            </View>
+        );
     };
 
     return (
@@ -23,7 +47,8 @@ const Login = ({ navigation }) => {
                 height: "100%",
             }}
         >
-            <UserLogin />
+            {userToken ? (<LoggedInModal />) : (<UserLogin />
+            )}
         </View>
     );
 };

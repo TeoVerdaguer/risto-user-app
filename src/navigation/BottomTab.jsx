@@ -63,9 +63,22 @@ const HomeStack = ({ route: { params } }) => {
                 initialParams={params}
                 options={{ headerShown: false }}
             />
-            <Stack.Screen name="Favorites" component={Favorites} initialParams={params} />
-            <Stack.Screen name="Reviews" component={Reviews} />
-            <Stack.Screen name="RateRestaurant" component={RateRestaurant} />
+            <Stack.Screen
+                name="Favorites"
+                component={Favorites}
+                initialParams={params}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="Reviews"
+                component={Reviews}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="RateRestaurant"
+                component={RateRestaurant}
+                options={{ headerShown: false }}
+            />
         </Stack.Navigator>
     );
 };
@@ -78,7 +91,10 @@ const BottomTab = ({}) => {
         retrieveUserToken();
     }, []);
 
-    // Get user token
+    /**
+     * @desc Gets user token from encrypted storage
+     * @returns void
+     */
     const retrieveUserToken = async () => {
         try {
             const token = await EncryptedStorage.getItem("user_token");
@@ -86,9 +102,9 @@ const BottomTab = ({}) => {
             if (token) {
                 console.log(token);
                 setIsLoggedIn(true);
-                console.log('user is logged in');
+                console.log("user is logged in");
             } else {
-                console.log('token is undefined');
+                console.log("token is undefined");
             }
         } catch (error) {
             console.log(error);
@@ -145,7 +161,12 @@ const BottomTab = ({}) => {
                         color="grey"
                         style={{ right: 0, position: "absolute" }}
                         onPress={() => {
-                            navigation.navigate("Favorites", { params: { isLoggedIn: isLoggedIn, setIsLoggedIn: setIsLoggedIn } });
+                            navigation.navigate("Favorites", {
+                                params: {
+                                    isLoggedIn: isLoggedIn,
+                                    setIsLoggedIn: setIsLoggedIn,
+                                },
+                            });
                             // navigation.navigate("Favorites");
                         }}
                     />

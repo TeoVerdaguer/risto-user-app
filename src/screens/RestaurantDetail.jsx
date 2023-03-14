@@ -1,21 +1,19 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
     ActivityIndicator,
     TouchableOpacity,
     Platform,
-    Alert,
+    Dimensions,
+    StyleSheet
 } from "react-native";
-import { useState, useEffect, useRef } from "react";
-import ImageCarousel from "../components/ImageCarousel";
-import { Dimensions } from "react-native";
-import NumericInput from "react-native-numeric-input";
-import DatePicker from "react-native-date-picker";
-import { StyleSheet } from "react-native";
+// Icons
 import Ionicons from "react-native-vector-icons/Ionicons";
 // Encrypted storage
 import EncryptedStorage from "react-native-encrypted-storage";
+// Components
+import ImageCarousel from "../components/ImageCarousel";
 import CreateReservation from "../components/CreateReservation";
 
 const RestaurantDetail = ({ route, navigation }) => {
@@ -26,92 +24,86 @@ const RestaurantDetail = ({ route, navigation }) => {
     const [business, setBusiness] = useState([]);
     const [images, setImages] = useState([]);
     const [loading, setLoading] = useState(true);
-    const today = new Date();
-    const [date, setDate] = useState(today);
-    const [time, setTime] = useState(today);
-    const [personsValue, setPersonsValue] = useState(1);
-    const [openDate, setOpenDate] = useState(false);
-    const [openTime, setOpenTime] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
-    const [userToken, setUserToken] = useState('');
-    
-    let msg = "";
+    const [userToken, setUserToken] = useState("");
+    let rating = null;
+    let logo = null;
 
-    const firstRender = useRef(true);
+    useEffect(() => {
+        getBusinessDetail();
+    }, []);
 
     useEffect(() => {
         getBusinessDetail();
         retrieveUserToken();
-    }, []);
-
-    useEffect(() => {
-        if (!firstRender.current) {
-            isFavorite
-                ? (msg = business.name + " agreagado a favoritos")
-                : (msg = business.name + " eliminado de favoritos");
-            Alert.alert(msg);
-        }
-        firstRender.current = false;
-    }, [isFavorite]);
-
-    // TODO: GET favorites y POST favorite
+        getFavorites();
+    }, [userToken]);
 
     // GET business details
     const getBusinessDetail = async () => {
         const URL = `https://risto-api-dev.dexterdevelopment.io/business/get-business-detail/?business=${businessId}`;
-        try {
-            const response = await fetch(URL, {
-                method: "GET",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                },
-            });
-            const {data} = await response.json();
-            console.log(data);
-            let image = "";
-            if (
-                data.resource_list.length > 0 &&
-                data.resource_list[0].resource_image
-            ) {
-                for (
-                    let i = 0;
-                    i <= data.resource_list.length;
-                    i++
+
+        if (userToken) {
+            try {
+                const response = await fetch(URL, {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                });
+                const { data } = await response.json();
+                if (
+                    data &&
+                    data.resource_list.length > 0 &&
+                    data.resource_list[0].resource_image &&
+                    images.length < 1
                 ) {
-                    if (data.resource_list[i]) {
-                        images.push(
-                            data.resource_list[i].resource_image
-                        );
+                    for (let i = 0; i <= data.resource_list.length; i++) {
+                        if (data.resource_list[i]) {
+                            images.push(data.resource_list[i].resource_image);
+                            if (data.resource_list[i].is_main_resource) {
+                                console.log(data.resource_list[i].resource_image);
+                                logo = data.resource_list[i].resource_image;
+                            }
+                        }
                     }
                 }
+                if (data.business_feedback) {
+                    rating = data.business_feedback.overall_average;
+                }
+
+                let businessData = {
+                    logo: logo,
+                    name: data.business_name,
+                    address: data.business_address,
+                    id: data.business_id,
+                    ...(rating ? {rating: data.business_feedback.overall_average} : {}),
+                    ...(data.business_feedback ? {feedback: data.business_feedback} : {})
+
+                };
+                setImages(images);
+                console.log(businessData);
+                setBusiness(businessData);
+                setLoading(false);
+            } catch (error) {
+                console.log(error);
             }
-            let businessData = {
-                img: image,
-                name: data.business_name,
-                address: data.business_address,
-                id: data.business_id,
-            };
-            setImages(images);
-            setBusiness(businessData);
-            setLoading(false);
-        } catch (error) {
-            console.log(error);
-        }
+        };
     };
 
-    // Get user token
+    /**
+     * @desc Gets user token from encrypted storage
+     * @returns void
+     */
     const retrieveUserToken = async () => {
-        console.log(userToken);
         try {
             const token = await EncryptedStorage.getItem("user_token");
 
             if (token) {
-                console.log(token);
                 setUserToken(token);
-                console.log('user is logged in');
             } else {
-                console.log('token is undefined');
+                console.log("token is undefined");
             }
         } catch (error) {
             console.log(error);
@@ -134,12 +126,13 @@ const RestaurantDetail = ({ route, navigation }) => {
                 }),
             });
             const responseJSON = await response.json();
-            const data = responseJSON.data;
             if (responseJSON.error) {
-                console.log('error en la reserva');
                 console.log(responseJSON.message);
+                responseJSON.message ===
+                "El business indicado ya se encuentra en favoritos"
+                    ? deleteFromFavorites(business)
+                    : null;
             } else {
-                console.log('agregado a favs completada');
                 setIsFavorite(true);
             }
         } catch (error) {
@@ -147,8 +140,69 @@ const RestaurantDetail = ({ route, navigation }) => {
         }
     };
 
-    // TODO: GET avail de mesas -
-    // reservation/get-reservation-availability/?reservation_date=2023-01-17&business=1&reservation_size=4
+    const isInFavorites = (data, businessId) => {
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].business_id === businessId) {
+                setIsFavorite(true);
+                break;
+            } else {
+                setIsFavorite(false);
+            }
+        }
+    };
+
+    const getFavorites = async () => {
+        if (userToken) {
+            const URL = `https://risto-api-dev.dexterdevelopment.io/business/list-favorite-business/?client=${userToken}`;
+            
+            try {
+                const response = await fetch(URL, {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                });
+                const responseJSON = await response.json();
+                const data = responseJSON.data;
+                if (responseJSON.error) {
+                    console.log(responseJSON.message);
+                } else {
+                    isInFavorites(data, businessId);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    };
+
+    const deleteFromFavorites = async (business) => {
+        const URL = `https://risto-api-dev.dexterdevelopment.io/business/delete-favorite-business/`;
+
+        try {
+            const response = await fetch(URL, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    client: userToken,
+                    business: business,
+                }),
+            });
+            const responseJSON = await response.json();
+            const data = responseJSON.data;
+            if (responseJSON.error) {
+                console.log(responseJSON.message);
+            } else {
+                console.log("quitado de favs");
+                getFavorites();
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     return (
         <View
@@ -158,7 +212,7 @@ const RestaurantDetail = ({ route, navigation }) => {
             }}
         >
             {/* Images container */}
-            <View style={{ height: IOS ? "60%" : "55%" }}>
+            <View style={{ height: IOS ? "55%" : "50%" }}>
                 {/* Loading spinner */}
                 {loading && (
                     <View
@@ -246,7 +300,7 @@ const RestaurantDetail = ({ route, navigation }) => {
                     <TouchableOpacity
                         style={Styles.ratingContainer}
                         onPress={() =>
-                            navigation.navigate("Reviews", { business })
+                            navigation.navigate({ name: "Reviews", params: { business: business }})
                         }
                     >
                         <Ionicons
@@ -255,21 +309,15 @@ const RestaurantDetail = ({ route, navigation }) => {
                             size={16}
                             color="#e8c33d"
                         />
-                        <Text style={Styles.black}>4.4</Text>
+                        <Text style={Styles.black}>{business.rating ? business.rating : '-'}</Text>
                     </TouchableOpacity>
                 </View>
                 <View style={Styles.line} />
 
                 {/* Reservation modal */}
-                <CreateReservation
-                    restaurantName={business.name}
-                />
-
-
-
-
-
-                
+                {business.name &&
+                    <CreateReservation restaurantName={business.name} />
+                }
             </View>
         </View>
     );

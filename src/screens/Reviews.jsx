@@ -1,169 +1,198 @@
-import React from "react";
+// Reseñas
+
+import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, Image, TouchableOpacity } from "react-native";
 import { Dimensions } from "react-native";
 import { Colors } from "../helper/Colors";
 import { StyleSheet } from "react-native";
+// icons
+import Ionicons from "react-native-vector-icons/Ionicons";
 
-const Reviews = ({ navigation, business }) => {
+const Reviews = ({ navigation, route }) => {
     const widthScreen = Dimensions.get("window").width;
     const heightScreen = Dimensions.get("window").height;
+    const [business, setBusiness] = useState({});
+    const [comments, setComments] = useState([]);
 
-    const business1 = {
-        id: 1,
-        name: "Cuatro Catorce",
-        img: "https://picsum.photos/200",
-        reviewsNumber: 120,
-        rating: 4.4,
-        points: {
-            comida: 4,
-            precio: 3.5,
-            calidad: 4.3,
-        },
+    useEffect(() => {
+        setBusiness(route.params.business);
+        console.log(business);
+    }, []);
+
+    useEffect(() => {
+        console.log(business);
+        getComments(business.id);
+    }, [business]);
+
+    // GET business comments
+    const getComments = async (business_id) => {
+        const URL = `https://risto-api-dev.dexterdevelopment.io/feedback/list-comment-feedback/?business=${business_id}`;
+
+            try {
+                const response = await fetch(URL, {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                });
+                const { data } = await response.json();
+                console.log(data);
+                setComments(data);
+            } catch (error) {
+                console.log(error);
+            }
     };
-
-    const comments = [
-        {
-            id: 1,
-            userName: "Mateo",
-            userImg: "https://picsum.photos/200",
-            comment: '"Lorem ipsum dolor sit amet"',
-        },
-        {
-            id: 2,
-            userName: "Franco",
-            userImg: "https://picsum.photos/200",
-            comment:
-                '"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam imperdiet egestas dignissim. Morbi consectetur, nulla eget blandit accumsan, nulla turpis varius nunc, non hendrerit nunc dui at ligula."',
-        },
-        {
-            id: 3,
-            userName: "Lucía",
-            userImg: "https://picsum.photos/200",
-            comment: '"Lorem ipsum dolor sit amet"',
-        },
-        {
-            id: 4,
-            userName: "Guido",
-            userImg: "https://picsum.photos/200",
-            comment:
-                '"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam imperdiet egestas dignissim."',
-        },
-    ];
 
     return (
         <View
             style={{
                 backgroundColor: Colors.lightGray,
                 height: heightScreen,
-                width: widthScreen,
-                paddingHorizontal: 20,
+                width: widthScreen
             }}
         >
-            {/* Rating section */}
-            <Text style={Styles.title}>Calificación de {business1.name}</Text>
-            <View style={Styles.topContainer}>
-                <View style={Styles.ratingContainer}>
-                    <View style={Styles.numberContainer}>
-                        <Text style={Styles.ratingNumber}>
-                            {business1.rating}
-                        </Text>
-                        <Text style={Styles.ratingTotal}>/5</Text>
-                    </View>
-                    <Text style={Styles.ratingSubtitle}>
-                        Basado en {business1.reviewsNumber} reseñas
-                    </Text>
-                </View>
-                <View style={Styles.pointsContainer}>
-                    <Text>Comida</Text>
-                    <Text>Precio</Text>
-                    <Text>Calidad</Text>
-                </View>
-                <View style={Styles.pointsContainer}>
-                    <View style={Styles.pointsBarBack}>
-                        <View
-                            style={{
-                                height: 8,
-                                width: 90,
-                                backgroundColor: "#717171",
-                            }}
-                        ></View>
-                    </View>
-                    <View style={Styles.pointsBarBack}>
-                        <View
-                            style={{
-                                height: 8,
-                                width: 50,
-                                backgroundColor: "#717171",
-                            }}
-                        ></View>
-                    </View>
-                    <View style={Styles.pointsBarBack}>
-                        <View
-                            style={{
-                                height: 8,
-                                width: 75,
-                                backgroundColor: "#717171",
-                            }}
-                        ></View>
-                    </View>
-                </View>
+            {/* Header */}
+            <View style={Styles.header}>
+                <Ionicons
+                    name="chevron-back"
+                    size={30}
+                    color={'#2cb551'}
+                    onPress={() => {navigation.goBack()}}
+                />
+                <Text style={Styles.headerTitle}>Reseñas</Text>
+                <View style={{width: 30}}></View>
             </View>
-            {/* Comments section */}
-            <View style={{ height: "47%" }}>
-                <Text style={Styles.commentsTitle}>Comentarios</Text>
-                <ScrollView showsVerticalScrollIndicator={false}>
-                    {comments.map((comment) => (
-                        <View
-                            key={comment.id}
-                            style={{
-                                backgroundColor: "#FFF",
-                                borderRadius: 10,
-                                marginVertical: 10,
-                                minHeight: 100,
-                            }}
-                        >
+
+            {/* Rating section */}
+            {business.feedback && (
+            <View style={Styles.mainContainer}>
+                <Text style={Styles.title}>Calificación de {business.name}</Text>
+                <View style={Styles.topContainer}>
+                    <View style={Styles.ratingContainer}>
+                        <View style={Styles.numberContainer}>
+                            <Text style={Styles.ratingNumber}>
+                                {business.rating}
+                            </Text>
+                            <Text style={Styles.ratingTotal}>/5</Text>
+                        </View>
+                        <Text style={Styles.ratingSubtitle}>
+                            Basado en {business.feedback.overall_total_feedbacks} reseñas
+                        </Text>
+                    </View>
+                    <View style={Styles.pointsContainer}>
+                        <Text>Comida</Text>
+                        <Text>Precio</Text>
+                        <Text>Servicio</Text>
+                    </View>
+                    <View style={Styles.pointsContainer}>
+                        <View style={Styles.pointsBarBack}>
                             <View
                                 style={{
-                                    flexDirection: "row",
-                                    alignItems: "center",
+                                    height: 8,
+                                    width: (business.feedback.food_average * 20),
+                                    backgroundColor: "#717171",
                                 }}
-                            >
-                                <Image
-                                    style={{
-                                        height: 25,
-                                        width: 25,
-                                        borderRadius: 20,
-                                        margin: 10,
-                                    }}
-                                    source={{ uri: comment.userImg }}
-                                />
-                                <Text>{comment.userName}</Text>
-                            </View>
-                            <Text
-                                style={{
-                                    marginHorizontal: 15,
-                                    marginBottom: 10,
-                                }}
-                            >
-                                {comment.comment}
-                            </Text>
+                            ></View>
                         </View>
-                    ))}
-                </ScrollView>
-                <TouchableOpacity
-                    style={Styles.reserveBtn}
-                    onPress={() =>
-                        navigation.navigate("RateRestaurant", { business })
-                    }
-                >
-                    <Text style={Styles.btnText}>Calificar</Text>
-                </TouchableOpacity>
+                        <View style={Styles.pointsBarBack}>
+                            <View
+                                style={{
+                                    height: 8,
+                                    width: (business.feedback.price_average * 20),
+                                    backgroundColor: "#717171",
+                                }}
+                            ></View>
+                        </View>
+                        <View style={Styles.pointsBarBack}>
+                            <View
+                                style={{
+                                    height: 8,
+                                    width: (business.feedback.service_average * 20),
+                                    backgroundColor: "#717171",
+                                }}
+                            ></View>
+                        </View>
+                    </View>
+                </View>
+                {/* Comments section */}
+                <View style={{ height: "47%" }}>
+                    <Text style={Styles.commentsTitle}>Comentarios</Text>
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        {comments && comments.length > 0 && comments.map((comment) => (
+                            <View
+                                key={comment.id}
+                                style={{
+                                    backgroundColor: "#FFF",
+                                    borderRadius: 10,
+                                    marginVertical: 10,
+                                    minHeight: 100,
+                                }}
+                            >
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <Image
+                                        style={{
+                                            height: 25,
+                                            width: 25,
+                                            borderRadius: 20,
+                                            margin: 10,
+                                        }}
+                                        source={{ uri: comment.user.photo }}
+                                    />
+                                    <Text>{comment.user.givenName}</Text>
+                                </View>
+                                <Text
+                                    style={{
+                                        marginHorizontal: 15,
+                                        marginBottom: 10,
+                                    }}
+                                >
+                                    {comment.comment_review}
+                                </Text>
+                            </View>
+                        ))}
+                    </ScrollView>
+                    <TouchableOpacity
+                        style={Styles.reserveBtn}
+                        onPress={() =>
+                            navigation.navigate("RateRestaurant", { business: business })
+                        }
+                    >
+                        <Text style={Styles.btnText}>Calificar</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
+            )}
         </View>
     );
 };
 
+const IOS = Platform.OS === "ios";
+
 const Styles = StyleSheet.create({
+    header: {
+        flexDirection: 'row',
+        height: IOS ? 100 : 60,
+        backgroundColor: '#fff',
+        width: '100%',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        paddingBottom: 15
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#000'
+    },
+    mainContainer: {
+        paddingHorizontal: 20,
+        height: '95%'
+    },
     topContainer: {
         flexDirection: "row",
         justifyContent: "space-between",

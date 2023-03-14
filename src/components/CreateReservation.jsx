@@ -30,8 +30,14 @@ const CreateReservation = ({
     const [showSpecialRequestsModal, setShowSpecialRequestsModal] = useState(false);
 
     useEffect(() => {
-        restaurantName ? getRestaurant(restaurantName) : null;
+        getRestaurant(restaurantName);
     }, []);
+
+    useEffect(() => {
+        if (restaurant.name) {
+            getRestaurant(restaurantName);
+        }
+    }, [restaurant]);
 
     /**
      * @desc Gets list of restaurants that match the searched text
@@ -57,7 +63,6 @@ const CreateReservation = ({
                     data[0].resource_list?.resource_image ??
                     "https://picsum.photos/200",
             };
-
             setRestaurant(restaurant);
             setRestaurantImg(restaurant.img);
         } catch (error) {
@@ -76,7 +81,7 @@ const CreateReservation = ({
         // Date format: YYYY-MM-DD
         const formattedDate = `${date.toISOString().split("T")[0]}`;
         const URL = `https://risto-api-dev.dexterdevelopment.io/reservation/get-reservation-availability/?reservation_date=${formattedDate}&business=${restaurantId}&reservation_size=${partySize}`;
-        console.log(URL);
+        // console.log(URL);
         try {
             const response = await fetch(URL, {
                 method: "GET",
@@ -87,13 +92,14 @@ const CreateReservation = ({
             });
             const responseJSON = await response.json();
             responseJSON.error
-                ? console.log("error: " + responseJSON.message)
+                ? console.log(responseJSON.message)
                 : null;
             const data = responseJSON.data;
             setAvailableTimes(data);
         } catch (error) {
             console.log(error);
         }
+
     };
 
     /**
@@ -114,6 +120,8 @@ const CreateReservation = ({
                 alignItems: "center",
             }}
             onPress={() => {
+                console.log('pressed');
+                console.log(time);
                 setTime(time);
                 setOpenTime(!openTime);
             }}
@@ -151,7 +159,7 @@ const CreateReservation = ({
                             ? Styles.datePickerDisabled
                             : Styles.datePicker
                     }
-                    onPress={() => setOpenDate(true)}
+                    onPress={() => setOpenDate(!openDate)}
                 >
                     <Text style={Styles.mainText}>
                         {date.toISOString().slice(0, 10)}
@@ -181,10 +189,10 @@ const CreateReservation = ({
                 maximumDate={endDate}
                 onConfirm={(date) => {
                     setDate(date);
-                    setOpenDate(false);
+                    // setOpenDate(false);
                 }}
                 onCancel={() => {
-                    setOpenDate(false);
+                    // setOpenDate(false);
                 }}
             />
 

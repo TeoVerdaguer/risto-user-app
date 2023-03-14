@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Text,
     View,
@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { List } from "react-native-paper";
 import Ionicons from "react-native-vector-icons/Ionicons";
+// Encrypted storage
+import EncryptedStorage from "react-native-encrypted-storage";
 
 const SpecialRequests = ({
     showSpecialRequestsModal,
@@ -18,13 +20,35 @@ const SpecialRequests = ({
     date,
     time,
     partySize,
-    specialOcation,
-    specialOcationType,
 }) => {
-    const [value, onChangeText] = useState("");
     const [isSpecialOcation, setIsSpecialOcation] = useState(false);
     const [selectedOcation, setSelectedOcation] = useState("Cumpleaños");
     const [expanded, setExpanded] = useState(false);
+    const [comment, setComment] = useState('');
+    const [userToken, setUserToken] = useState('');
+
+    useEffect(() => {
+        retrieveUserToken();
+    }, []);
+
+    /**
+     * @desc Gets user token from encrypted storage
+     * @returns void
+     */
+    const retrieveUserToken = async () => {
+        try {
+            const token = await EncryptedStorage.getItem("user_token");
+
+            if (token) {
+                setUserToken(token);
+            } else {
+                console.log("token is undefined");
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     /**
      * @desc creates a new reservation
      * @param {number} id
@@ -38,41 +62,43 @@ const SpecialRequests = ({
         specialOcation,
         specialOcationType
     ) => {
-        const clientId = "109990122989172956878";
-        const clientPhone = "3513288231";
+        const clientPhone = "3513288231"; // TODO: get client phone
         // Date format: YYYY-MM-DD
         const reservationDate = `${date.toISOString().split("T")[0]} ${time}`;
         const URL = `https://risto-api-dev.dexterdevelopment.io/reservation/post-reservation/`;
-
-        try {
-            const response = await fetch(URL, {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    business: restaurant.id,
-                    reservation_size: partySize,
-                    client_id: clientId,
-                    reservation_date: reservationDate,
-                    reservation_phone: clientPhone,
-                    special_reservation: specialOcation,
-                    special_reservation_type: specialOcationType,
-                }),
-            });
-            const responseJSON = await response.json();
-            const data = responseJSON.data;
-            if (responseJSON.error) {
-                console.log("error en la reserva");
-                console.log(responseJSON.message);
-            } else {
-                console.log("reserva completada");
-                setShowSpecialRequestsModal(false);
-                setShowThankYouMsg(true);
+        if (userToken) {
+            try {
+                const response = await fetch(URL, {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        business: restaurant.id,
+                        reservation_size: partySize,
+                        client_id: userToken,
+                        reservation_date: reservationDate,
+                        reservation_phone: clientPhone,
+                        special_reservation: specialOcation,
+                        special_reservation_type: specialOcationType,
+                        ...(comment ? {reservation_comment: comment} : {})
+                    }),
+                });
+                const responseJSON = await response.json();
+                const data = responseJSON.data;
+                if (responseJSON.error) {
+                    console.log("error en la reserva");
+                    console.log(responseJSON.message);
+                } else {
+                    console.log("reserva completada");
+                    console.log(data);
+                    setShowSpecialRequestsModal(false);
+                    setShowThankYouMsg(true);
+                }
+            } catch (error) {
+                console.log(error);
             }
-        } catch (error) {
-            console.log(error);
         }
     };
 
@@ -87,18 +113,20 @@ const SpecialRequests = ({
             }}
         >
             <View style={Styles.container}>
-                <View style={{ width: '100%', justifyContent: 'flex-end' }}>
-                <TouchableOpacity onPress={() => setShowSpecialRequestsModal(false)}>
-                    <Ionicons
-                        style={{ padding: 10, alignSelf: 'flex-end' }}
-                        name="close"
-                        size={30}
-                        color="#000"
-                        onPress={() => {
-                            setShowSpecialRequestsModal(false);
-                        }}
-                    />
-                </TouchableOpacity>
+                <View style={{ width: "100%", justifyContent: "flex-end" }}>
+                    <TouchableOpacity
+                        onPress={() => setShowSpecialRequestsModal(false)}
+                    >
+                        <Ionicons
+                            style={{ padding: 10, alignSelf: "flex-end" }}
+                            name="close"
+                            size={30}
+                            color="#000"
+                            onPress={() => {
+                                setShowSpecialRequestsModal(false);
+                            }}
+                        />
+                    </TouchableOpacity>
                 </View>
 
                 <Text style={Styles.text}>¿Es una ocasión especial?</Text>
@@ -139,24 +167,33 @@ const SpecialRequests = ({
 
                 {isSpecialOcation && (
                     <List.Section style={{ width: "90%" }}>
-                        <List.Accordion style={{ backgroundColor: '#fff'}} titleStyle={{color: '#000'}} title={selectedOcation} expanded={expanded} onPress={() => setExpanded(!expanded)}>
+                        <List.Accordion
+                            style={{ backgroundColor: "#fff" }}
+                            titleStyle={{ color: "#000" }}
+                            title={selectedOcation}
+                            expanded={expanded}
+                            onPress={() => setExpanded(!expanded)}
+                        >
                             <List.Item
                                 title="Cumpleaños"
-                                onPress={() => 
-                                    {setSelectedOcation("Cumpleaños"); setExpanded(false);}
-                            }
+                                onPress={() => {
+                                    setSelectedOcation("Cumpleaños");
+                                    setExpanded(false);
+                                }}
                             />
                             <List.Item
                                 title="Aniversario"
-                                onPress={() =>
-                                    {setSelectedOcation("Aniversario"); setExpanded(false);}
-                                }
+                                onPress={() => {
+                                    setSelectedOcation("Aniversario");
+                                    setExpanded(false);
+                                }}
                             />
                             <List.Item
                                 title="Negocios"
-                                onPress={() => 
-                                    {setSelectedOcation("Negocios"); setExpanded(false);}
-                                }
+                                onPress={() => {
+                                    setSelectedOcation("Negocios");
+                                    setExpanded(false);
+                                }}
                             />
                         </List.Accordion>
                     </List.Section>
@@ -167,8 +204,8 @@ const SpecialRequests = ({
                     multiline
                     numberOfLines={4}
                     maxLength={40}
-                    onChangeText={(text) => onChangeText(text)}
-                    value={value}
+                    onChangeText={(text) => setComment(text)}
+                    value={comment}
                     placeholder="comentarios"
                     style={Styles.textInput}
                 />
@@ -204,6 +241,8 @@ const Styles = StyleSheet.create({
         shadowOffset: 50,
         shadowOpacity: 1,
         shadowRadius: 20,
+        width: '90%',
+        marginLeft: '5%'
     },
     text: {
         fontSize: 20,

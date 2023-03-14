@@ -7,7 +7,7 @@ const ThankYou = ({ showThankYouMsg, setShowThankYouMsg, restaurantName, restaur
 
     const goToHome = () => {
         setShowThankYouMsg(false);
-        setModalVisible(false);
+        setModalVisible ? setModalVisible(false) : null;
     };
 
     return (
